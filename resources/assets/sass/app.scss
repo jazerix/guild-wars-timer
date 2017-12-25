@@ -1,2 +1,7 @@
-// Materialize
-@import "~materialize-css/sass/materialize";
+@import "~bulma/sass/utilities/initial-variables";
+@import "~bulma/sass/utilities/functions";
+
+$primary: #b1120e;
+$link: #7d0d0a;
+
+@import "~bulma";
