@@ -9,6 +9,6 @@ class EventController extends Controller
 {
     public function all()
     {
-        return Event::with('states')->get();
+        return Event::with(['states','times'])->get();
     }
 }

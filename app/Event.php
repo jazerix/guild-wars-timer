@@ -8,7 +8,7 @@ class Event extends Model
 {
     public function times()
     {
-        return $this->belongsToMany(Time::class);
+        return $this->hasMany(EventTime::class);
     }
 
     public function states()

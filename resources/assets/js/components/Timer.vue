@@ -13,7 +13,12 @@
                     20 minutes ago
                 </span>
                 <span class="end">
-                    Reset in 12 minutes
+                    <span>Reset in 12 minutes</span>
+                    <ul>
+                        <li><a href="#"><i class="fa fa-bell" aria-hidden="true"></i></a></li>
+                        <li><a href="#"><i class="fa fa-map-marker" aria-hidden="true"></i></a></li>
+                        <li class="favorite"><a href="#"><i class="fa fa-star" aria-hidden="true"></i></a></li>
+                    </ul>
                 </span>
             </div>
         </div>

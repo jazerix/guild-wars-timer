@@ -41117,6 +41117,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "timer",
@@ -41166,7 +41171,36 @@ var staticRenderFns = [
           ]),
           _vm._v(" "),
           _c("span", { staticClass: "end" }, [
-            _vm._v("\n                Reset in 12 minutes\n            ")
+            _c("span", [_vm._v("Reset in 12 minutes")]),
+            _vm._v(" "),
+            _c("ul", [
+              _c("li", [
+                _c("a", { attrs: { href: "#" } }, [
+                  _c("i", {
+                    staticClass: "fa fa-bell",
+                    attrs: { "aria-hidden": "true" }
+                  })
+                ])
+              ]),
+              _vm._v(" "),
+              _c("li", [
+                _c("a", { attrs: { href: "#" } }, [
+                  _c("i", {
+                    staticClass: "fa fa-map-marker",
+                    attrs: { "aria-hidden": "true" }
+                  })
+                ])
+              ]),
+              _vm._v(" "),
+              _c("li", { staticClass: "favorite" }, [
+                _c("a", { attrs: { href: "#" } }, [
+                  _c("i", {
+                    staticClass: "fa fa-star",
+                    attrs: { "aria-hidden": "true" }
+                  })
+                ])
+              ])
+            ])
           ])
         ])
       ])
