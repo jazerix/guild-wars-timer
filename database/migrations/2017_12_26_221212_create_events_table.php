@@ -20,7 +20,6 @@ class CreateEventsTable extends Migration
             $table->integer('duration')->nullable();
             $table->string('name');
             $table->string('location');
-            $table->string('location_link');
             $table->string('waypoint_link');
             $table->string('wiki_link');
             $table->string('class');
