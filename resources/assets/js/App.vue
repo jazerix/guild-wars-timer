@@ -47,25 +47,32 @@
 
                     <div class="navbar-end">
                         <div class="navbar-item">
-                            <div class="field is-grouped">
+                            <a class="button is-link">
+                                <span class="icon is-small">
+                                    <i class="fa fa-bell"></i>
+                                </span>
+                            </a>
+                        </div>
+                        <div class="navbar-item is-hoverable">
+                            <div class="field is-grouped" style="margin:0px;">
                                 <p class="control">
-                                    <a class="bd-tw-button button" data-social-network="Twitter" data-social-action="tweet" data-social-target="http://localhost:4000" target="_blank" href="https://twitter.com/intent/tweet?text=Bulma: a modern CSS framework based on Flexbox&amp;hashtags=bulmaio&amp;url=http://localhost:4000&amp;via=jgthms">
-                                        <span class="icon">
-                                            <i class="fa fa-twitter"></i>
-                                        </span>
-                                        <span>
-                                            Tweet
-                                        </span>
-                                    </a>
+                                    Day
                                 </p>
                                 <p class="control">
-                                    <a class="button is-primary" href="https://github.com/jgthms/bulma/archive/0.5.1.zip">
-                                        <span class="icon">
-                                            <i class="fa fa-download"></i>
-                                        </span>
-                                        <span>Download</span>
-                                    </a>
+                                    <progress class="progress is-small" style="width:100px;position: relative;top: 50%;transform: translateY(-50%);" value="15" max="100">15%</progress>
                                 </p>
+                                <p class="control">
+                                    Night
+                                </p>
+                            </div>
+                            <div class="navbar-dropdown is-boxed">
+                                <div class="navbar-item">
+                                    <div>
+                                        <small>
+                                            Day ends in 20 minutes
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -93,44 +100,20 @@
                     <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
                         World Bosses
                     </a>
-                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/media-object/">
-                        Dry Top
+                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
+                        Heart of Thorns
                     </a>
-                    <a class="navbar-item is-tab " href="https://bulma.io/documentation/layout/hero/">
-                        Verdant Brink
-                    </a>
-                    <a class="navbar-item is-tab " href="https://bulma.io/documentation/layout/section/">
-                        Auric Basin
-                    </a>
-                    <a class="navbar-item is-tab " href="https://bulma.io/documentation/layout/footer/">
-                        Tangled Depths
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Dragons Stand
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Lake Doric
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Lay-Line Anomaly
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Crystal Oasis
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Desert Highlands
-                    </a>
-                    <a class="navbar-item is-tab" href="#">
-                        Domain of Vabbi
+                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
+                        Path of Fire
                     </a>
                 </div>
             </div>
         </nav>
         <section class="section">
             <div class="container">
-
-                <h1 class="title">Active Events</h1>
+                <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
+                    <timer/>
                     <timer/>
                 </div>
             </div>

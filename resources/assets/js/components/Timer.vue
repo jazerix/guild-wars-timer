@@ -1,31 +1,20 @@
 <template>
-    <div class="column is-3">
-        <div class="card">
-            <div class="card-image">
-                <figure class="image is-16by9">
-                    <img src="/imgs/fire_elemental.jpg" alt="Placeholder image">
-                </figure>
-            </div>
-            <header class="card-header">
-                <p class="card-header-title">
-                    Fire Elemental
-                </p>
-                <a href="#" class="card-header-icon" aria-label="more options">
-                    <span class="icon">
-                        <i class="fa fa-angle-down" aria-hidden="true"></i>
-                    </span>
-                </a>
-            </header>
-            <div class="card-content">
-                <p style="text-align:center;font-size:32px;color:#b1120e">15:30</p>
-            </div>
-            <footer class="card-footer">
-                <div class="card-footer-item">
-                    <img style="height:24px;width:24px;vertical-align:middle" src="/imgs/waypoint.png" />
-                    <a href="#">Metrica Province</a>
+    <div class="column is-6 is-4-tablet is-4-fullhd">
+        <div  class="timer octovine">
+            <div class="boss">
+                <span class="event">Tequalt the Sunless</span>
+                <span class="description">Auric Basin</span>
+                <div class="left">
+                    15:22
                 </div>
-            </footer>
-            <div class="card-action">
+            </div>
+            <div class="panel">
+                <span class="start">
+                    20 minutes ago
+                </span>
+                <span class="end">
+                    Reset in 12 minutes
+                </span>
             </div>
         </div>
     </div>
@@ -40,7 +29,8 @@ export default {
     }
   },
   data() {
-    return {};
+    return {
+    };
   },
   mounted() {
     console.log("Component mounted.");
