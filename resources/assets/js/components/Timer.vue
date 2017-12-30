@@ -2,10 +2,10 @@
     <div class="column is-6 is-4-tablet is-4-fullhd">
         <div class="timer" :class="tag">
             <div class="boss">
-                <span class="event">Tequalt the Sunless</span>
+                <span class="event">{{ name }}</span>
                 <span class="description">{{ location }}</span>
                 <div class="left">
-                    15:22
+                    {{ countdown }}
                 </div>
             </div>
             <div class="panel">
@@ -13,7 +13,7 @@
                     20 minutes ago
                 </span>
                 <span class="end">
-                    <span>{{ nextString }}</span>
+                    <span>{{ upcoming }}</span>
                     <ul>
                         <li>
                             <a href="#">
@@ -60,68 +60,140 @@ export default {
   },
   data() {
     return {
-      next: null,
+      next: {
+        time: null,
+        string: "",
+        soon: false
+      },
       nextString: "",
-      favorite: false
+      favorite: false,
+      event: {
+        active: false,
+        time: 0
+      }
     };
   },
-  computed: {},
+  computed: {
+    countdown() {
+      if (this.event.active) {
+        var seconds = this.event.time % 60;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+        return Math.floor(this.event.time/60) + ':' + seconds;
+      }
+      return this.next.soon ? "Soon" : "Ended"
+    },
+    upcoming() {
+      if (this.event.active) {
+        return "currently in progress"
+      } 
+      return this.next.string;
+      
+    }
+  },
   mounted() {
+    this.currentlyHappening();
     this.nextTime();
   },
   watch: {
     "$parent.time.second": function(second) {
       var time = this.$parent.time;
-      if (second == 0) this.nextString = this.getNextString();
+      if (this.event.active) {
+        this.event.time--;
+        if (this.event.time == 0)
+          this.event.active = false;
+      }
+      if (second == 0) {
+        if ( ! this.event.active)
+          this.currentlyHappening();
+        this.next.string = this.getNextString();
+      }
     }
   },
   methods: {
-    nextTime() {
-      var dt = new Date();
+      currentlyHappening()
+      {
+        var hour = this.$parent.time.hour;
+        var minute = this.$parent.time.minute;
+        var second = this.$parent.time.second;
+        var dt = new Date();
+        dt.setHours(hour, minute, second);
+        dt.setTime(dt.getTime() - 60000 * this.duration);
 
+        var current = this.findEvent(dt.getHours(), dt.getTime());
+        var currentTime = new Date();
+        currentTime.setUTCHours(current.hour, current.minute, 0);
+        var currentTimeEnd = new Date(currentTime.getTime() + 60000 * this.duration);
+        
+        var time = new Date();
+        time.setUTCHours(hour, minute, second);
+
+        if (time.getTime() >= currentTime.getTime() && time.getTime() <= currentTimeEnd.getTime())
+        {
+          this.event.active = true;
+          this.event.time = Math.floor((currentTimeEnd.getTime() - time.getTime()) / 1000);
+        }
+        else
+          this.event.active = false;
+      },
+
+      findEvent(hour, minute) {
+          var event = null;
+          this.times.forEach(function(time) {
+            if (event != null) return;
+            time = time.split(":");
+            var tHour = parseInt(time[0]);
+            var tMinute = parseInt(time[1]);
+
+            if (hour < tHour || (hour == tHour && minute < tMinute)) {
+              event = {
+                hour: tHour,
+                minute: tMinute
+              };
+              return;
+            }
+          });
+
+          if (event == null)
+          {
+            var time = this.times[0].split(":");
+            var tHour = parseInt(time[0]);
+            var tMinute = parseInt(time[1]);
+            event = {
+              hour: tHour,
+              minute: tMinute
+            };
+          }
+
+          return event;
+      },
+    nextTime() {
+      
       var hour = this.$parent.time.hour;
       var minute = this.$parent.time.minute;
-      var next = null;
-
-      this.times.forEach(function(time) {
-        if (next != null) return;
-        time = time.split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
-
-        if (hour < tHour || (hour == tHour && minute < tMinute)) {
-          next = {
-            hour: tHour,
-            minute: tMinute
-          };
-          return;
+      this.next.time = this.findEvent(hour, minute);
+      this.next.string = this.getNextString();
+    },
+    getTimeTilNext() {
+        var hour = this.next.time.hour - this.$parent.time.hour;
+        var minute = this.next.time.minute - this.$parent.time.minute;
+        if (minute < 0) {
+            minute += 60;
+            hour--;
         }
-      });
-
-      if (next == null) {
-        var time = this.times[0].split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
-        next = {
-          hour: tHour,
-          minute: tMinute
-        };
-      }
-      this.next = next;
-      this.nextString = this.getNextString();
+        if (hour < 0) {
+            hour += 23;
+        }
+        return {
+            hour: hour,
+            minute: minute
+        }
     },
     getNextString() {
-      var hour = this.next.hour - this.$parent.time.hour;
-      var minute = this.next.minute - this.$parent.time.minute;
-      if (minute < 0) {
-        minute += 60;
-        hour--;
-      }
-      if (hour < 0) {
-        hour += 23;
-      }
+      var time = this.getTimeTilNext();
+        this.next.soon = time.hour == 0 && time.minute < 15;
 
-      if (hour > 0) return "in " + hour + " hours and " + minute + " minute";
+      if (time.hour > 0) return "in " + time.hour + " hours and " + time.minute + " minutes";
+      return "in " + time.minute + " minutes";
     }
   }
 };

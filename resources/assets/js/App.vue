@@ -144,7 +144,7 @@ export default {
   mounted: function() {
       setInterval(function() {
       var d = new Date();
-          this.time.hour = d.getUTCHours();
+          this.time.hour =  d.getUTCHours();
           this.time.minute = d.getUTCMinutes();
           this.time.second = d.getUTCSeconds();
       }.bind(this), 1000);
