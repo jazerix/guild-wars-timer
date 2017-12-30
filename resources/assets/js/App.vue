@@ -113,8 +113,7 @@
             <div class="container">
                 <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
-                    <timer/>
-                    <timer/>
+                    <timer v-for="event in events" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :location="event.location" :duration="event.duration" />
                 </div>
             </div>
         </section>
@@ -124,7 +123,33 @@
 <script>
 export default {
   name: "app",
-  mounted: function() {}
+  data() {
+      return {
+          events: [],
+          time: {
+              hour: new Date().getUTCHours(),
+              minute: new Date().getUTCMinutes(),
+              second: new Date().getUTCSeconds()
+          }
+      }
+  },
+  methods: {
+      all() {
+          axios.get('/events')
+          .then(function(response) {
+              this.events = response.data;
+          }.bind(this));
+      }
+  },
+  mounted: function() {
+      setInterval(function() {
+      var d = new Date();
+          this.time.hour = d.getUTCHours();
+          this.time.minute = d.getUTCMinutes();
+          this.time.second = d.getUTCSeconds();
+      }.bind(this), 1000);
+      this.all();
+  }
 };
 </script>
 

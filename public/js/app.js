@@ -40683,11 +40683,36 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-  name: "app",
-  mounted: function mounted() {}
+    name: "app",
+    data: function data() {
+        return {
+            events: [],
+            time: {
+                hour: new Date().getUTCHours(),
+                minute: new Date().getUTCMinutes(),
+                second: new Date().getUTCSeconds()
+            }
+        };
+    },
+
+    methods: {
+        all: function all() {
+            axios.get('/events').then(function (response) {
+                this.events = response.data;
+            }.bind(this));
+        }
+    },
+    mounted: function mounted() {
+        setInterval(function () {
+            var d = new Date();
+            this.time.hour = d.getUTCHours();
+            this.time.minute = d.getUTCMinutes();
+            this.time.second = d.getUTCSeconds();
+        }.bind(this), 1000);
+        this.all();
+    }
 });
 
 /***/ }),
@@ -40712,8 +40737,18 @@ var render = function() {
         _c(
           "div",
           { staticClass: "columns is-multiline" },
-          [_c("timer"), _vm._v(" "), _c("timer")],
-          1
+          _vm._l(_vm.events, function(event) {
+            return _c("timer", {
+              key: event.id,
+              attrs: {
+                name: event.name,
+                tag: event.class,
+                times: event.times,
+                location: event.location,
+                duration: event.duration
+              }
+            })
+          })
         )
       ])
     ])
@@ -41122,19 +41157,106 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "timer",
   props: {
     name: {
       type: String
+    },
+    tag: {
+      type: String
+    },
+    location: {
+      type: String
+    },
+    times: {
+      type: Array
+    },
+    duration: {
+      type: Number
     }
   },
   data: function data() {
-    return {};
+    return {
+      next: null,
+      nextString: "",
+      favorite: false
+    };
   },
+
+  computed: {},
   mounted: function mounted() {
-    console.log("Component mounted.");
+    this.nextTime();
+  },
+
+  watch: {
+    "$parent.time.second": function $parentTimeSecond(second) {
+      var time = this.$parent.time;
+      if (second == 0) this.nextString = this.getNextString();
+    }
+  },
+  methods: {
+    nextTime: function nextTime() {
+      var dt = new Date();
+
+      var hour = this.$parent.time.hour;
+      var minute = this.$parent.time.minute;
+      var next = null;
+
+      this.times.forEach(function (time) {
+        if (next != null) return;
+        time = time.split(":");
+        var tHour = parseInt(time[0]);
+        var tMinute = parseInt(time[1]);
+
+        if (hour < tHour || hour == tHour && minute < tMinute) {
+          next = {
+            hour: tHour,
+            minute: tMinute
+          };
+          return;
+        }
+      });
+
+      if (next == null) {
+        var time = this.times[0].split(":");
+        var tHour = parseInt(time[0]);
+        var tMinute = parseInt(time[1]);
+        next = {
+          hour: tHour,
+          minute: tMinute
+        };
+      }
+      this.next = next;
+      this.nextString = this.getNextString();
+    },
+    getNextString: function getNextString() {
+      var hour = this.next.hour - this.$parent.time.hour;
+      var minute = this.next.minute - this.$parent.time.minute;
+      if (minute < 0) {
+        minute += 60;
+        hour--;
+      }
+      if (hour < 0) {
+        hour += 23;
+      }
+
+      if (hour > 0) return "in " + hour + " hours and " + minute + " minute";
+    }
   }
 });
 
@@ -41146,63 +41268,87 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", { staticClass: "column is-6 is-4-tablet is-4-fullhd" }, [
+    _c("div", { staticClass: "timer", class: _vm.tag }, [
+      _c("div", { staticClass: "boss" }, [
+        _c("span", { staticClass: "event" }, [_vm._v("Tequalt the Sunless")]),
+        _vm._v(" "),
+        _c("span", { staticClass: "description" }, [
+          _vm._v(_vm._s(_vm.location))
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "left" }, [
+          _vm._v("\n                15:22\n            ")
+        ])
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "panel" }, [
+        _c("span", { staticClass: "start" }, [
+          _vm._v("\n                20 minutes ago\n            ")
+        ]),
+        _vm._v(" "),
+        _c("span", { staticClass: "end" }, [
+          _c("span", [_vm._v(_vm._s(_vm.nextString))]),
+          _vm._v(" "),
+          _c("ul", [
+            _vm._m(0),
+            _vm._v(" "),
+            _vm._m(1),
+            _vm._v(" "),
+            _c("li", { class: { favorite: _vm.favorite } }, [
+              _c(
+                "a",
+                {
+                  on: {
+                    click: function($event) {
+                      _vm.favorite = !_vm.favorite
+                    }
+                  }
+                },
+                [
+                  _vm.favorite
+                    ? _c("i", {
+                        staticClass: "fa fa-star",
+                        attrs: { "aria-hidden": "true" }
+                      })
+                    : _vm._e(),
+                  _vm._v(" "),
+                  !_vm.favorite
+                    ? _c("i", {
+                        staticClass: "fa fa-star-o",
+                        attrs: { "aria-hidden": "true" }
+                      })
+                    : _vm._e()
+                ]
+              )
+            ])
+          ])
+        ])
+      ])
+    ])
+  ])
 }
 var staticRenderFns = [
   function() {
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "column is-6 is-4-tablet is-4-fullhd" }, [
-      _c("div", { staticClass: "timer octovine" }, [
-        _c("div", { staticClass: "boss" }, [
-          _c("span", { staticClass: "event" }, [_vm._v("Tequalt the Sunless")]),
-          _vm._v(" "),
-          _c("span", { staticClass: "description" }, [_vm._v("Auric Basin")]),
-          _vm._v(" "),
-          _c("div", { staticClass: "left" }, [
-            _vm._v("\n                15:22\n            ")
-          ])
-        ]),
-        _vm._v(" "),
-        _c("div", { staticClass: "panel" }, [
-          _c("span", { staticClass: "start" }, [
-            _vm._v("\n                20 minutes ago\n            ")
-          ]),
-          _vm._v(" "),
-          _c("span", { staticClass: "end" }, [
-            _c("span", [_vm._v("Reset in 12 minutes")]),
-            _vm._v(" "),
-            _c("ul", [
-              _c("li", [
-                _c("a", { attrs: { href: "#" } }, [
-                  _c("i", {
-                    staticClass: "fa fa-bell",
-                    attrs: { "aria-hidden": "true" }
-                  })
-                ])
-              ]),
-              _vm._v(" "),
-              _c("li", [
-                _c("a", { attrs: { href: "#" } }, [
-                  _c("i", {
-                    staticClass: "fa fa-map-marker",
-                    attrs: { "aria-hidden": "true" }
-                  })
-                ])
-              ]),
-              _vm._v(" "),
-              _c("li", { staticClass: "favorite" }, [
-                _c("a", { attrs: { href: "#" } }, [
-                  _c("i", {
-                    staticClass: "fa fa-star",
-                    attrs: { "aria-hidden": "true" }
-                  })
-                ])
-              ])
-            ])
-          ])
-        ])
+    return _c("li", [
+      _c("a", { attrs: { href: "#" } }, [
+        _c("i", { staticClass: "fa fa-bell", attrs: { "aria-hidden": "true" } })
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("li", [
+      _c("a", { attrs: { href: "#" } }, [
+        _c("i", {
+          staticClass: "fa fa-map-marker",
+          attrs: { "aria-hidden": "true" }
+        })
       ])
     ])
   }

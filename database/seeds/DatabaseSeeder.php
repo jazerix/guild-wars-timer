@@ -26,10 +26,10 @@ class DatabaseSeeder extends Seeder
         ]);*/
 
         $tequatl = \App\Event::create([
-            'name' => 'Tequatl',
+            'name' => 'Tequatl the Sunless',
             'location' => 'Splintered Coast',
             'type' => 'world',
-            'has_states' => true,
+            'has_states' => false,
             'duration' => '15',
             'waypoint_link' => '[&BNABAAA=]',
             'wiki_link' => 'https://wiki.guildwars2.com/wiki/Tequatl_the_Sunless',

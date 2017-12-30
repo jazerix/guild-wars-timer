@@ -9,6 +9,12 @@ class EventController extends Controller
 {
     public function all()
     {
-        return Event::with(['states','times'])->get();
+        $times = Event::with(['states','times'])->get()->toArray();
+        foreach ($times as &$time) 
+        {
+            $timeList = collect($time['times'])->pluck('time_at');
+            $time['times'] = $timeList->toArray();
+        }
+        return $times;
     }
 }
