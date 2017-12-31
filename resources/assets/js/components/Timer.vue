@@ -2,7 +2,9 @@
   <div class="column is-6 is-4-tablet is-4-fullhd">
     <div class="timer" :class="tag">
       <div class="boss">
-        <span class="event"><a target="_blank" :href="wiki">{{ name }}</a></span>
+        <span class="event">
+          <a target="_blank" :href="wiki">{{ name }}</a>
+        </span>
         <span class="description">{{ location }}</span>
         <div class="left">
           {{ countdown }}
@@ -10,7 +12,7 @@
       </div>
       <div class="panel">
         <span class="start">
-          {{  event.active ? 'Next' : 'Starts' }} at {{ next.time | time }}
+          {{ event.active ? 'Next' : 'Starts' }} at {{ next.time | time }}
         </span>
         <span class="end">
           <span>{{ upcoming }}</span>
@@ -60,6 +62,9 @@ export default {
     duration: {
       type: Number
     },
+    id: {
+      type: Number
+    }
   },
   data() {
     return {
@@ -107,6 +112,11 @@ export default {
       if (second == 0) {
         if (!this.event.active) this.currentlyHappening();
         this.next.string = this.getNextString();
+
+        this.$emit("minutes", {
+          left: this.next.left,
+          id: this.id
+        });
       }
     }
   },
@@ -137,8 +147,7 @@ export default {
         this.event.time = Math.floor(
           (currentTimeEnd.getTime() - time.getTime()) / 1000
         );
-      }
-       else this.event.active = false;
+      } else this.event.active = false;
     },
 
     findEvent(hour, minute) {
@@ -197,8 +206,17 @@ export default {
       this.next.left = time.hour * 60 + time.minute;
 
       if (time.hour > 0)
-        return "in " + time.hour + " hours and " + time.minute + " minutes";
-      return "in " + time.minute + " minutes";
+        return (
+          "in " +
+          time.hour +
+          " hour" +
+          (time.hour == 1 ? "" : "s") +
+          ", " +
+          time.minute +
+          " minute" +
+          (time.minute == 1 ? "" : "s")
+        );
+      return "in " + time.minute + " minute" + (time.minute == 1 ? "" : "s");
     }
   },
   filters: {
@@ -208,7 +226,8 @@ export default {
       form.setUTCHours(t.hour);
       form.setUTCMinutes(t.minute);
       let hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
-      let minute = form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
+      let minute =
+        form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
       return hour + ":" + minute;
     }
   }

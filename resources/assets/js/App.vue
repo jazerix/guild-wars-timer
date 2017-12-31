@@ -113,7 +113,7 @@
             <div class="container">
                 <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
-                    <timer v-for="event in events" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration" />
+                    <timer v-for="event in now" @minutes="updateMinutesLeft" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration"  />
                 </div>
                 <h1 class="title">Soon...</h1>
                 <h1 class="title">Later...</h1>
@@ -137,6 +137,11 @@ export default {
       }
     };
   },
+  computed: {
+      now: function() {
+          return _.orderBy(this.events, 'minutes_til_next');
+      }
+  },
   methods: {
     all() {
       axios.get("/events").then(
@@ -145,6 +150,9 @@ export default {
         }.bind(this)
       );
     },
+    updateMinutesLeft(event){
+        this.events[event.id-1].minutes_til_next = event.left;
+    }
   },
   mounted: function() {
     setInterval(
@@ -157,11 +165,6 @@ export default {
       1000
     );
     this.all();
-  },
-  watch: {
-    "time.second": function(second) {
-      //this.sortChildren();
-    }
   }
 };
 </script>

@@ -40688,11 +40688,19 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     };
   },
 
+  computed: {
+    now: function now() {
+      return _.orderBy(this.events, 'minutes_til_next');
+    }
+  },
   methods: {
     all: function all() {
       axios.get("/events").then(function (response) {
         this.events = response.data;
       }.bind(this));
+    },
+    updateMinutesLeft: function updateMinutesLeft(event) {
+      this.events[event.id - 1].minutes_til_next = event.left;
     }
   },
   mounted: function mounted() {
@@ -40703,11 +40711,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.time.second = d.getUTCSeconds();
     }.bind(this), 1000);
     this.all();
-  },
-  watch: {
-    "time.second": function timeSecond(second) {
-      //this.sortChildren();
-    }
   }
 });
 
@@ -40764,7 +40767,7 @@ var render = function() {
         _c(
           "div",
           { staticClass: "columns is-multiline" },
-          _vm._l(_vm.events, function(event) {
+          _vm._l(_vm.now, function(event) {
             return _c("timer", {
               key: event.id,
               attrs: {
@@ -40775,7 +40778,8 @@ var render = function() {
                 wiki: event.wiki_link,
                 location: event.location,
                 duration: event.duration
-              }
+              },
+              on: { minutes: _vm.updateMinutesLeft }
             })
           })
         ),
@@ -41156,6 +41160,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "timer",
@@ -41176,6 +41182,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       type: Array
     },
     duration: {
+      type: Number
+    },
+    id: {
       type: Number
     }
   },
@@ -41227,6 +41236,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       if (second == 0) {
         if (!this.event.active) this.currentlyHappening();
         this.next.string = this.getNextString();
+
+        this.$emit("minutes", {
+          left: this.next.left,
+          id: this.id
+        });
       }
     }
   },
@@ -41307,8 +41321,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.next.soon = time.hour < 1 && time.minute <= 15;
       this.next.left = time.hour * 60 + time.minute;
 
-      if (time.hour > 0) return "in " + time.hour + " hours and " + time.minute + " minutes";
-      return "in " + time.minute + " minutes";
+      if (time.hour > 0) return "in " + time.hour + " hour" + (time.hour == 1 ? "" : "s") + ", " + time.minute + " minute" + (time.minute == 1 ? "" : "s");
+      return "in " + time.minute + " minute" + (time.minute == 1 ? "" : "s");
     }
   },
   filters: {
