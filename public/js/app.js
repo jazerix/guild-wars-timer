@@ -40670,36 +40670,45 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
-    name: "app",
-    data: function data() {
-        return {
-            events: [],
-            time: {
-                hour: new Date().getUTCHours(),
-                minute: new Date().getUTCMinutes(),
-                second: new Date().getUTCSeconds()
-            }
-        };
-    },
+  name: "app",
+  data: function data() {
+    return {
+      events: [],
+      time: {
+        hour: new Date().getUTCHours(),
+        minute: new Date().getUTCMinutes(),
+        second: new Date().getUTCSeconds()
+      }
+    };
+  },
 
-    methods: {
-        all: function all() {
-            axios.get('/events').then(function (response) {
-                this.events = response.data;
-            }.bind(this));
-        }
-    },
-    mounted: function mounted() {
-        setInterval(function () {
-            var d = new Date();
-            this.time.hour = d.getUTCHours();
-            this.time.minute = d.getUTCMinutes();
-            this.time.second = d.getUTCSeconds();
-        }.bind(this), 1000);
-        this.all();
+  methods: {
+    all: function all() {
+      axios.get("/events").then(function (response) {
+        this.events = response.data;
+      }.bind(this));
     }
+  },
+  mounted: function mounted() {
+    setInterval(function () {
+      var d = new Date();
+      this.time.hour = d.getUTCHours();
+      this.time.minute = d.getUTCMinutes();
+      this.time.second = d.getUTCSeconds();
+    }.bind(this), 1000);
+    this.all();
+  },
+  watch: {
+    "time.second": function timeSecond(second) {
+      //this.sortChildren();
+    }
+  }
 });
 
 /***/ }),
@@ -40711,11 +40720,42 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _vm._m(0),
+    _c("nav", { staticClass: "navbar is-primary is-transparent has-shadow" }, [
+      _c("div", { staticClass: "container" }, [
+        _vm._m(0),
+        _vm._v(" "),
+        _c(
+          "div",
+          {
+            staticClass: "navbar-menu",
+            attrs: { id: "navbarExampleTransparentExample" }
+          },
+          [
+            _c("div", { staticClass: "navbar-start" }, [
+              _c("a", { staticClass: "navbar-item", attrs: { href: "" } }, [
+                _vm._v(
+                  "\n                        " +
+                    _vm._s(_vm.time.hour) +
+                    ":" +
+                    _vm._s(_vm.time.minute) +
+                    ":" +
+                    _vm._s(_vm.time.second) +
+                    "\n                    "
+                )
+              ]),
+              _vm._v(" "),
+              _vm._m(1)
+            ]),
+            _vm._v(" "),
+            _vm._m(2)
+          ]
+        )
+      ])
+    ]),
     _vm._v(" "),
-    _vm._m(1),
+    _vm._m(3),
     _vm._v(" "),
-    _vm._m(2),
+    _vm._m(4),
     _vm._v(" "),
     _c("section", { staticClass: "section" }, [
       _c("div", { staticClass: "container" }, [
@@ -40728,15 +40768,23 @@ var render = function() {
             return _c("timer", {
               key: event.id,
               attrs: {
+                id: event.id,
                 name: event.name,
                 tag: event.class,
                 times: event.times,
+                wiki: event.wiki_link,
                 location: event.location,
                 duration: event.duration
               }
             })
           })
-        )
+        ),
+        _vm._v(" "),
+        _c("h1", { staticClass: "title" }, [_vm._v("Soon...")]),
+        _vm._v(" "),
+        _c("h1", { staticClass: "title" }, [_vm._v("Later...")]),
+        _vm._v(" "),
+        _c("div", { staticClass: "columns is-multiline" })
       ])
     ])
   ])
@@ -40746,240 +40794,191 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c(
-      "nav",
-      { staticClass: "navbar is-primary is-transparent has-shadow" },
-      [
-        _c("div", { staticClass: "container" }, [
-          _c("div", { staticClass: "navbar-brand" }, [
-            _c(
-              "div",
-              {
-                staticClass: "navbar-burger burger",
-                attrs: { "data-target": "navbarExampleTransparentExample" }
-              },
-              [_c("span"), _vm._v(" "), _c("span"), _vm._v(" "), _c("span")]
+    return _c("div", { staticClass: "navbar-brand" }, [
+      _c(
+        "div",
+        {
+          staticClass: "navbar-burger burger",
+          attrs: { "data-target": "navbarExampleTransparentExample" }
+        },
+        [_c("span"), _vm._v(" "), _c("span"), _vm._v(" "), _c("span")]
+      )
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "navbar-item has-dropdown is-hoverable" }, [
+      _c(
+        "a",
+        {
+          staticClass: "navbar-link",
+          attrs: { href: "/documentation/overview/start/" }
+        },
+        [_vm._v("\n                            Docs\n                        ")]
+      ),
+      _vm._v(" "),
+      _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "/documentation/overview/start/" }
+          },
+          [
+            _vm._v(
+              "\n                                Overview\n                            "
             )
-          ]),
-          _vm._v(" "),
-          _c(
-            "div",
-            {
-              staticClass: "navbar-menu",
-              attrs: { id: "navbarExampleTransparentExample" }
-            },
-            [
-              _c("div", { staticClass: "navbar-start" }, [
-                _c(
-                  "a",
-                  {
-                    staticClass: "navbar-item",
-                    attrs: { href: "https://bulma.io/" }
-                  },
-                  [
-                    _vm._v(
-                      "\n                        Home\n                    "
-                    )
-                  ]
-                ),
-                _vm._v(" "),
-                _c(
-                  "div",
-                  { staticClass: "navbar-item has-dropdown is-hoverable" },
-                  [
-                    _c(
-                      "a",
-                      {
-                        staticClass: "navbar-link",
-                        attrs: { href: "/documentation/overview/start/" }
-                      },
-                      [
-                        _vm._v(
-                          "\n                            Docs\n                        "
-                        )
-                      ]
-                    ),
-                    _vm._v(" "),
-                    _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: { href: "/documentation/overview/start/" }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Overview\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: {
-                            href:
-                              "https://bulma.io/documentation/modifiers/syntax/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Modifiers\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: {
-                            href:
-                              "https://bulma.io/documentation/columns/basics/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Columns\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: {
-                            href:
-                              "https://bulma.io/documentation/layout/container/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Layout\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: {
-                            href: "https://bulma.io/documentation/form/general/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Form\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c("hr", { staticClass: "navbar-divider" }),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item",
-                          attrs: {
-                            href: "https://bulma.io/documentation/elements/box/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Elements\n                            "
-                          )
-                        ]
-                      ),
-                      _vm._v(" "),
-                      _c(
-                        "a",
-                        {
-                          staticClass: "navbar-item is-active",
-                          attrs: {
-                            href:
-                              "https://bulma.io/documentation/components/breadcrumb/"
-                          }
-                        },
-                        [
-                          _vm._v(
-                            "\n                                Components\n                            "
-                          )
-                        ]
-                      )
-                    ])
-                  ]
-                )
-              ]),
-              _vm._v(" "),
-              _c("div", { staticClass: "navbar-end" }, [
-                _c("div", { staticClass: "navbar-item" }, [
-                  _c("a", { staticClass: "button is-link" }, [
-                    _c("span", { staticClass: "icon is-small" }, [
-                      _c("i", { staticClass: "fa fa-bell" })
-                    ])
-                  ])
-                ]),
-                _vm._v(" "),
-                _c("div", { staticClass: "navbar-item is-hoverable" }, [
-                  _c(
-                    "div",
-                    {
-                      staticClass: "field is-grouped",
-                      staticStyle: { margin: "0px" }
-                    },
-                    [
-                      _c("p", { staticClass: "control" }, [
-                        _vm._v(
-                          "\n                                Day\n                            "
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c("p", { staticClass: "control" }, [
-                        _c(
-                          "progress",
-                          {
-                            staticClass: "progress is-small",
-                            staticStyle: {
-                              width: "100px",
-                              position: "relative",
-                              top: "50%",
-                              transform: "translateY(-50%)"
-                            },
-                            attrs: { value: "15", max: "100" }
-                          },
-                          [_vm._v("15%")]
-                        )
-                      ]),
-                      _vm._v(" "),
-                      _c("p", { staticClass: "control" }, [
-                        _vm._v(
-                          "\n                                Night\n                            "
-                        )
-                      ])
-                    ]
-                  ),
-                  _vm._v(" "),
-                  _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
-                    _c("div", { staticClass: "navbar-item" }, [
-                      _c("div", [
-                        _c("small", [
-                          _vm._v(
-                            "\n                                        Day ends in 20 minutes\n                                    "
-                          )
-                        ])
-                      ])
-                    ])
-                  ])
-                ])
-              ])
-            ]
-          )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "https://bulma.io/documentation/modifiers/syntax/" }
+          },
+          [
+            _vm._v(
+              "\n                                Modifiers\n                            "
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "https://bulma.io/documentation/columns/basics/" }
+          },
+          [
+            _vm._v(
+              "\n                                Columns\n                            "
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "https://bulma.io/documentation/layout/container/" }
+          },
+          [
+            _vm._v(
+              "\n                                Layout\n                            "
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "https://bulma.io/documentation/form/general/" }
+          },
+          [
+            _vm._v(
+              "\n                                Form\n                            "
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c("hr", { staticClass: "navbar-divider" }),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item",
+            attrs: { href: "https://bulma.io/documentation/elements/box/" }
+          },
+          [
+            _vm._v(
+              "\n                                Elements\n                            "
+            )
+          ]
+        ),
+        _vm._v(" "),
+        _c(
+          "a",
+          {
+            staticClass: "navbar-item is-active",
+            attrs: {
+              href: "https://bulma.io/documentation/components/breadcrumb/"
+            }
+          },
+          [
+            _vm._v(
+              "\n                                Components\n                            "
+            )
+          ]
+        )
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "navbar-end" }, [
+      _c("div", { staticClass: "navbar-item" }, [
+        _c("a", { staticClass: "button is-link" }, [
+          _c("span", { staticClass: "icon is-small" }, [
+            _c("i", { staticClass: "fa fa-bell" })
+          ])
         ])
-      ]
-    )
+      ]),
+      _vm._v(" "),
+      _c("div", { staticClass: "navbar-item is-hoverable" }, [
+        _c(
+          "div",
+          { staticClass: "field is-grouped", staticStyle: { margin: "0px" } },
+          [
+            _c("p", { staticClass: "control" }, [
+              _vm._v(
+                "\n                                Day\n                            "
+              )
+            ]),
+            _vm._v(" "),
+            _c("p", { staticClass: "control" }, [
+              _c(
+                "progress",
+                {
+                  staticClass: "progress is-small",
+                  staticStyle: {
+                    width: "100px",
+                    position: "relative",
+                    top: "50%",
+                    transform: "translateY(-50%)"
+                  },
+                  attrs: { value: "15", max: "100" }
+                },
+                [_vm._v("15%")]
+              )
+            ]),
+            _vm._v(" "),
+            _c("p", { staticClass: "control" }, [
+              _vm._v(
+                "\n                                Night\n                            "
+              )
+            ])
+          ]
+        ),
+        _vm._v(" "),
+        _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
+          _c("div", { staticClass: "navbar-item" }, [
+            _c("div", [
+              _c("small", [
+                _vm._v(
+                  "\n                                        Day ends in 20 minutes\n                                    "
+                )
+              ])
+            ])
+          ])
+        ])
+      ])
+    ])
   },
   function() {
     var _vm = this
@@ -41164,6 +41163,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     name: {
       type: String
     },
+    wiki: {
+      type: String
+    },
     tag: {
       type: String
     },
@@ -41182,7 +41184,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       next: {
         time: null,
         string: "",
-        soon: false
+        soon: false,
+        left: null
       },
       nextString: "",
       favorite: false,
@@ -41198,7 +41201,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       if (this.event.active) {
         var seconds = this.event.time % 60;
         seconds = seconds < 10 ? "0" + seconds : seconds;
-        return Math.floor(this.event.time / 60) + ':' + seconds;
+        return Math.floor(this.event.time / 60) + ":" + seconds;
       }
       return this.next.soon ? "Soon" : "Ended";
     },
@@ -41236,7 +41239,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       dt.setHours(hour, minute, second);
       dt.setTime(dt.getTime() - 60000 * this.duration);
 
-      var current = this.findEvent(dt.getHours(), dt.getTime());
+      var current = this.findEvent(dt.getHours(), dt.getMinutes());
       var currentTime = new Date();
       currentTime.setUTCHours(current.hour, current.minute, 0);
       var currentTimeEnd = new Date(currentTime.getTime() + 60000 * this.duration);
@@ -41279,7 +41282,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       return event;
     },
     nextTime: function nextTime() {
-
       var hour = this.$parent.time.hour;
       var minute = this.$parent.time.minute;
       this.next.time = this.findEvent(hour, minute);
@@ -41302,10 +41304,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     getNextString: function getNextString() {
       var time = this.getTimeTilNext();
-      this.next.soon = time.hour == 0 && time.minute < 15;
+      this.next.soon = time.hour < 1 && time.minute <= 15;
+      this.next.left = time.hour * 60 + time.minute;
 
       if (time.hour > 0) return "in " + time.hour + " hours and " + time.minute + " minutes";
       return "in " + time.minute + " minutes";
+    }
+  },
+  filters: {
+    time: function time(t) {
+      if (t == null) return "";
+      var form = new Date();
+      form.setUTCHours(t.hour);
+      form.setUTCMinutes(t.minute);
+      var hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
+      var minute = form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
+      return hour + ":" + minute;
     }
   }
 });
@@ -41321,22 +41335,30 @@ var render = function() {
   return _c("div", { staticClass: "column is-6 is-4-tablet is-4-fullhd" }, [
     _c("div", { staticClass: "timer", class: _vm.tag }, [
       _c("div", { staticClass: "boss" }, [
-        _c("span", { staticClass: "event" }, [_vm._v(_vm._s(_vm.name))]),
+        _c("span", { staticClass: "event" }, [
+          _c("a", { attrs: { target: "_blank", href: _vm.wiki } }, [
+            _vm._v(_vm._s(_vm.name))
+          ])
+        ]),
         _vm._v(" "),
         _c("span", { staticClass: "description" }, [
           _vm._v(_vm._s(_vm.location))
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "left" }, [
-          _vm._v(
-            "\n                " + _vm._s(_vm.countdown) + "\n            "
-          )
+          _vm._v("\n        " + _vm._s(_vm.countdown) + "\n      ")
         ])
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "panel" }, [
         _c("span", { staticClass: "start" }, [
-          _vm._v("\n                20 minutes ago\n            ")
+          _vm._v(
+            "\n        " +
+              _vm._s(_vm.event.active ? "Next" : "Starts") +
+              " at " +
+              _vm._s(_vm._f("time")(_vm.next.time)) +
+              "\n      "
+          )
         ]),
         _vm._v(" "),
         _c("span", { staticClass: "end" }, [

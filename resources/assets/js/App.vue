@@ -11,8 +11,8 @@
                 </div>
                 <div id="navbarExampleTransparentExample" class="navbar-menu">
                     <div class="navbar-start">
-                        <a class="navbar-item" href="https://bulma.io/">
-                            Home
+                        <a class="navbar-item" href="">
+                            {{ time.hour }}:{{ time.minute }}:{{ time.second }}
                         </a>
                         <div class="navbar-item has-dropdown is-hoverable">
                             <a class="navbar-link" href="/documentation/overview/start/">
@@ -113,8 +113,12 @@
             <div class="container">
                 <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
-                    <timer v-for="event in events" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :location="event.location" :duration="event.duration" />
+                    <timer v-for="event in events" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration" />
                 </div>
+                <h1 class="title">Soon...</h1>
+                <h1 class="title">Later...</h1>
+                <div class="columns is-multiline"> </div>
+
             </div>
         </section>
     </div>
@@ -124,31 +128,40 @@
 export default {
   name: "app",
   data() {
-      return {
-          events: [],
-          time: {
-              hour: new Date().getUTCHours(),
-              minute: new Date().getUTCMinutes(),
-              second: new Date().getUTCSeconds()
-          }
+    return {
+      events: [],
+      time: {
+        hour: new Date().getUTCHours(),
+        minute: new Date().getUTCMinutes(),
+        second: new Date().getUTCSeconds()
       }
+    };
   },
   methods: {
-      all() {
-          axios.get('/events')
-          .then(function(response) {
-              this.events = response.data;
-          }.bind(this));
-      }
+    all() {
+      axios.get("/events").then(
+        function(response) {
+            this.events = response.data;
+        }.bind(this)
+      );
+    },
   },
   mounted: function() {
-      setInterval(function() {
-      var d = new Date();
-          this.time.hour =  d.getUTCHours();
-          this.time.minute = d.getUTCMinutes();
-          this.time.second = d.getUTCSeconds();
-      }.bind(this), 1000);
-      this.all();
+    setInterval(
+      function() {
+        var d = new Date();
+        this.time.hour = d.getUTCHours();
+        this.time.minute = d.getUTCMinutes();
+        this.time.second = d.getUTCSeconds();
+      }.bind(this),
+      1000
+    );
+    this.all();
+  },
+  watch: {
+    "time.second": function(second) {
+      //this.sortChildren();
+    }
   }
 };
 </script>
