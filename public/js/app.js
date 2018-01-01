@@ -40674,6 +40674,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -40690,43 +40695,28 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
   computed: {
     now: function now() {
-      /*return _.filter(this.events, function(event){
-              return event.minutes_til_next < 80;
-          });*/
-      //return _.orderBy(this.events, 'minutes_til_next');
+      return _.chain(this.events).filter(function (event) {
+        return event.status.active == true;
+      }).orderBy(function (event) {
+        return event.next.total_minute;
+      }).value();
+    },
+    soon: function soon() {
+      return _.chain(this.events).filter(function (event) {
+        return event.next.total_minute <= 15 && !event.status.active;
+      }).orderBy(function (event) {
+        return event.next.total_minute;
+      }).value();
+    },
+    later: function later() {
+      return _.chain(this.events).filter(function (event) {
+        return event.next.total_minute > 15 && !event.status.active;
+      }).orderBy(function (event) {
+        return event.next.total_minute;
+      }).value();
     }
   },
   mounted: function mounted() {
-    setInterval(function () {
-      var d = new Date();
-      this.time.hour = d.getUTCHours();
-      this.time.minute = d.getUTCMinutes();
-      this.time.second = d.getUTCSeconds();
-      this.events.forEach(function (event) {
-        if (event.status.active) {
-          event.cooldown--;
-          if (event.cooldown == 0) {
-            event.status.active = false;
-            event.status.cooldown = null;
-          }
-        }
-        if (this.time.second == 0) {
-          if (event.next.total_minute > 1) {
-            if (event.next.minute == 0) {
-              event.next.hour--;
-              event.next.minute = 59;
-            } else event.next.minute--;
-            event.next.total_minute--;
-          } else {
-            event.next = this.timeTilNext(event);
-            if (!event.status.active) {
-              event.status.active = true;
-              event.status.cooldown = event.duration * 60;
-            }
-          }
-        }
-      }.bind(this));
-    }.bind(this), 1000);
     this.all();
   },
   methods: {
@@ -40741,6 +40731,36 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         event.next = this.timeTilNext(event);
         this.currentlyHappening(event);
       }.bind(this));
+      setInterval(function () {
+        var d = new Date();
+        this.time.hour = d.getUTCHours();
+        this.time.minute = d.getUTCMinutes();
+        this.time.second = d.getUTCSeconds();
+        this.events.forEach(function (event) {
+          if (event.status.active) {
+            event.status.cooldown--;
+            if (event.cooldown == 0) {
+              event.status.active = false;
+              event.status.cooldown = null;
+            }
+          }
+          if (this.time.second == 0) {
+            if (event.next.total_minute > 1) {
+              if (event.next.minute == 0) {
+                event.next.hour--;
+                event.next.minute = 59;
+              } else event.next.minute--;
+              event.next.total_minute--;
+            } else {
+              event.next = this.timeTilNext(event);
+              if (!event.status.active) {
+                event.status.active = true;
+                event.status.cooldown = event.duration * 60;
+              }
+            }
+          }
+        }.bind(this));
+      }.bind(this), 1000);
     },
     findNextEvent: function findNextEvent(event, hour, minute) {
       var next = null;
@@ -40780,12 +40800,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         hour--;
       }
       if (hour < 0) {
-        hour += 23;
+        hour += 24;
       }
       return {
         hour: hour,
         minute: minute,
-        total_minute: hour * 60 + minute
+        total_minute: hour * 60 + minute,
+        at: {
+          hour: next.hour,
+          minute: next.minute
+        }
       };
     },
     currentlyHappening: function currentlyHappening(event) {
@@ -40794,7 +40818,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       var second = this.time.second;
       var dt = new Date();
       dt.setHours(hour, minute, second);
-      dt.setTime(dt.getTime() - 60000 * this.duration);
+      dt.setTime(dt.getTime() - 60000 * event.duration);
 
       var current = this.findNextEvent(event, dt.getHours(), dt.getMinutes());
       var currentTime = new Date();
@@ -40872,24 +40896,56 @@ var render = function() {
             return _c("timer", {
               key: event.id,
               attrs: {
-                id: event.id,
-                name: event.name,
                 tag: event.class,
-                times: event.times,
+                name: event.name,
                 wiki: event.wiki_link,
                 location: event.location,
-                duration: event.duration
-              },
-              on: { minutes: _vm.updateMinutesLeft }
+                status: event.status,
+                next: event.next
+              }
             })
           })
         ),
         _vm._v(" "),
         _c("h1", { staticClass: "title" }, [_vm._v("Soon...")]),
         _vm._v(" "),
+        _c(
+          "div",
+          { staticClass: "columns is-multiline" },
+          _vm._l(_vm.soon, function(event) {
+            return _c("timer", {
+              key: event.id,
+              attrs: {
+                tag: event.class,
+                name: event.name,
+                wiki: event.wiki_link,
+                location: event.location,
+                status: event.status,
+                next: event.next
+              }
+            })
+          })
+        ),
+        _vm._v(" "),
         _c("h1", { staticClass: "title" }, [_vm._v("Later...")]),
         _vm._v(" "),
-        _c("div", { staticClass: "columns is-multiline" })
+        _c(
+          "div",
+          { staticClass: "columns is-multiline" },
+          _vm._l(_vm.later, function(event) {
+            return _c("timer", {
+              key: event.id,
+              attrs: {
+                tag: event.class,
+                name: event.name,
+                wiki: event.wiki_link,
+                location: event.location,
+                status: event.status,
+                next: event.next
+              }
+            })
+          })
+        )
       ])
     ])
   ])
@@ -41267,145 +41323,51 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "timer",
   props: {
-    name: {
+    tag: {
       type: String
     },
     wiki: {
       type: String
     },
-    tag: {
+    name: {
       type: String
     },
     location: {
       type: String
     },
-    times: {
-      type: Array
+    status: {
+      type: Object
     },
-    duration: {
-      type: Number
-    },
-    id: {
-      type: Number
+    next: {
+      type: Object
     }
   },
   data: function data() {
     return {
-      next: {
-        time: null,
-        string: "",
-        soon: false,
-        left: null
-      },
-      nextString: "",
-      favorite: false,
-      event: {
-        active: false,
-        time: 0
-      }
+      favorite: false
     };
   },
 
   computed: {
     countdown: function countdown() {
-      if (this.event.active) {
-        var seconds = this.event.time % 60;
+      if (this.status.active) {
+        var seconds = this.status.cooldown % 60;
         seconds = seconds < 10 ? "0" + seconds : seconds;
-        return Math.floor(this.event.time / 60) + ":" + seconds;
+        return Math.floor(this.status.cooldown / 60) + ":" + seconds;
       }
-      return this.next.soon ? "Soon" : "Ended";
+      return this.next.total_minute <= 15 ? "Soon" : "Ended";
     },
     upcoming: function upcoming() {
-      if (this.event.active) {
+      if (this.status.active) {
         return "currently in progress";
       }
-      return this.next.string;
+      return this.formatNext(this.next);
     }
   },
-  mounted: function mounted() {
-    this.currentlyHappening();
-    this.nextTime();
-  },
-
   methods: {
-    currentlyHappening: function currentlyHappening() {
-      var hour = this.$parent.time.hour;
-      var minute = this.$parent.time.minute;
-      var second = this.$parent.time.second;
-      var dt = new Date();
-      dt.setHours(hour, minute, second);
-      dt.setTime(dt.getTime() - 60000 * this.duration);
-
-      var current = this.findEvent(dt.getHours(), dt.getMinutes());
-      var currentTime = new Date();
-      currentTime.setUTCHours(current.hour, current.minute, 0);
-      var currentTimeEnd = new Date(currentTime.getTime() + 60000 * this.duration);
-
-      var time = new Date();
-      time.setUTCHours(hour, minute, second);
-
-      if (time.getTime() >= currentTime.getTime() && time.getTime() <= currentTimeEnd.getTime()) {
-        this.event.active = true;
-        this.event.time = Math.floor((currentTimeEnd.getTime() - time.getTime()) / 1000);
-      } else this.event.active = false;
-    },
-    findEvent: function findEvent(hour, minute) {
-      var event = null;
-      this.times.forEach(function (time) {
-        if (event != null) return;
-        time = time.split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
-
-        if (hour < tHour || hour == tHour && minute < tMinute) {
-          event = {
-            hour: tHour,
-            minute: tMinute
-          };
-          return;
-        }
-      });
-
-      if (event == null) {
-        var time = this.times[0].split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
-        event = {
-          hour: tHour,
-          minute: tMinute
-        };
-      }
-
-      return event;
-    },
-    nextTime: function nextTime() {
-      var hour = this.$parent.time.hour;
-      var minute = this.$parent.time.minute;
-      this.next.time = this.findEvent(hour, minute);
-      this.next.string = this.getNextString();
-    },
-    getTimeTilNext: function getTimeTilNext() {
-      var hour = this.next.time.hour - this.$parent.time.hour;
-      var minute = this.next.time.minute - this.$parent.time.minute;
-      if (minute < 0) {
-        minute += 60;
-        hour--;
-      }
-      if (hour < 0) {
-        hour += 23;
-      }
-      return {
-        hour: hour,
-        minute: minute
-      };
-    },
-    getNextString: function getNextString() {
-      var time = this.getTimeTilNext();
-      this.next.soon = time.hour < 1 && time.minute <= 15;
-      this.next.left = time.hour * 60 + time.minute;
-
-      if (time.hour > 0) return "in " + time.hour + " hour" + (time.hour == 1 ? "" : "s") + ", " + time.minute + " minute" + (time.minute == 1 ? "" : "s");
-      return "in " + time.minute + " minute" + (time.minute == 1 ? "" : "s");
+    formatNext: function formatNext(next) {
+      if (next.hour > 0) return "in " + next.hour + " hour" + (next.hour == 1 ? "" : "s") + ", " + next.minute + " minute" + (next.minute == 1 ? "" : "s");
+      return "in " + next.minute + " minute" + (next.minute == 1 ? "" : "s");
     }
   },
   filters: {
@@ -41443,18 +41405,20 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "left" }, [
-          _vm._v("\n        " + _vm._s(_vm.countdown) + "\n      ")
+          _vm._v(
+            "\n                " + _vm._s(_vm.countdown) + "\n            "
+          )
         ])
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "panel" }, [
         _c("span", { staticClass: "start" }, [
           _vm._v(
-            "\n        " +
-              _vm._s(_vm.event.active ? "Next" : "Starts") +
+            "\n                " +
+              _vm._s(_vm.status.active ? "Next" : "Starts") +
               " at " +
-              _vm._s(_vm._f("time")(_vm.next.time)) +
-              "\n      "
+              _vm._s(_vm._f("time")(_vm.next.at)) +
+              "\n            "
           )
         ]),
         _vm._v(" "),

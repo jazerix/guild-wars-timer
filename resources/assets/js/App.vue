@@ -113,11 +113,16 @@
             <div class="container">
                 <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
-                    <timer v-for="event in now" @minutes="updateMinutesLeft" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration" />
+                    <timer v-for="event in now" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
                 </div>
                 <h1 class="title">Soon...</h1>
+                <div class="columns is-multiline">
+                    <timer v-for="event in soon" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
+                </div>
                 <h1 class="title">Later...</h1>
-                <div class="columns is-multiline"> </div>
+                <div class="columns is-multiline">
+                    <timer v-for="event in later" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
+                </div>
 
             </div>
         </section>
@@ -139,48 +144,37 @@ export default {
   },
   computed: {
     now: function() {
-      /*return _.filter(this.events, function(event){
-              return event.minutes_til_next < 80;
-          });*/
-      //return _.orderBy(this.events, 'minutes_til_next');
+      return _.chain(this.events)
+        .filter(function(event) {
+          return event.status.active == true;
+        })
+        .orderBy(function(event) {
+          return event.next.total_minute;
+        })
+        .value();
+    },
+    soon: function() {
+      return _.chain(this.events)
+        .filter(function(event) {
+          return event.next.total_minute <= 15 && !event.status.active;
+        })
+        .orderBy(function(event) {
+          return event.next.total_minute;
+        })
+        .value();
+    },
+    later: function() {
+      return _.chain(this.events)
+        .filter(function(event) {
+          return event.next.total_minute > 15 && !event.status.active;
+        })
+        .orderBy(function(event) {
+          return event.next.total_minute;
+        })
+        .value();
     }
   },
   mounted: function() {
-    setInterval(
-      function() {
-        var d = new Date();
-        this.time.hour = d.getUTCHours();
-        this.time.minute = d.getUTCMinutes();
-        this.time.second = d.getUTCSeconds();
-        this.events.forEach(
-          function(event) {
-            if (event.status.active) {
-              event.cooldown--;
-              if (event.cooldown == 0) {
-                event.status.active = false;
-                event.status.cooldown = null;
-              }
-            }
-            if (this.time.second == 0) {
-              if (event.next.total_minute > 1) {
-                if (event.next.minute == 0) {
-                  event.next.hour--;
-                  event.next.minute = 59;
-                } else event.next.minute--;
-                event.next.total_minute--;
-              } else {
-                event.next = this.timeTilNext(event);
-                if (!event.status.active) {
-                  event.status.active = true;
-                  event.status.cooldown = event.duration * 60;
-                }
-              }
-            }
-          }.bind(this)
-        );
-      }.bind(this),
-      1000
-    );
     this.all();
   },
   methods: {
@@ -198,6 +192,41 @@ export default {
           event.next = this.timeTilNext(event);
           this.currentlyHappening(event);
         }.bind(this)
+      );
+      setInterval(
+        function() {
+          var d = new Date();
+          this.time.hour = d.getUTCHours();
+          this.time.minute = d.getUTCMinutes();
+          this.time.second = d.getUTCSeconds();
+          this.events.forEach(
+            function(event) {
+              if (event.status.active) {
+                event.status.cooldown--;
+                if (event.cooldown == 0) {
+                  event.status.active = false;
+                  event.status.cooldown = null;
+                }
+              }
+              if (this.time.second == 0) {
+                if (event.next.total_minute > 1) {
+                  if (event.next.minute == 0) {
+                    event.next.hour--;
+                    event.next.minute = 59;
+                  } else event.next.minute--;
+                  event.next.total_minute--;
+                } else {
+                  event.next = this.timeTilNext(event);
+                  if (!event.status.active) {
+                    event.status.active = true;
+                    event.status.cooldown = event.duration * 60;
+                  }
+                }
+              }
+            }.bind(this)
+          );
+        }.bind(this),
+        1000
       );
     },
     findNextEvent(event, hour, minute) {
@@ -238,12 +267,16 @@ export default {
         hour--;
       }
       if (hour < 0) {
-        hour += 23;
+        hour += 24;
       }
       return {
         hour: hour,
         minute: minute,
-        total_minute: hour * 60 + minute
+        total_minute: hour * 60 + minute,
+        at: {
+          hour: next.hour,
+          minute: next.minute
+        }
       };
     },
     currentlyHappening(event) {
@@ -252,7 +285,7 @@ export default {
       var second = this.time.second;
       var dt = new Date();
       dt.setHours(hour, minute, second);
-      dt.setTime(dt.getTime() - 60000 * this.duration);
+      dt.setTime(dt.getTime() - 60000 * event.duration);
 
       var current = this.findNextEvent(event, dt.getHours(), dt.getMinutes());
       var currentTime = new Date();

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    protected $appends = ['next', 'status', 'cooldown'];
+    protected $appends = ['next', 'status'];
 
     public function times()
     {
@@ -24,13 +24,9 @@ class Event extends Model
         return [
             'hour' => $time['hour'],
             'minute' => $time['minute'],
-            'total_minute' => $time['hour'] * 60 + $time['minute']
+            'total_minute' => $time['hour'] * 60 + $time['minute'],
+            'at' => $time['at']
         ];
-    }
-
-    public function getCooldownAttribute()
-    {
-        return 22;
     }
 
     public function getStatusAttribute()
@@ -62,6 +58,7 @@ class Event extends Model
         $hour = (int)date('H');
         $minute = (int)date('i');
         $next = $this->findEvent($hour, $minute);
+        $at = $next;
         $hour = $next['hour'] - $hour;
         $minute = $next['minute'] - $minute;
         if ($minute < 0) {
@@ -69,9 +66,9 @@ class Event extends Model
             $hour--;
         }
         if ($hour < 0) {
-            $hour += 23;
+            $hour += 24;
         }
-        return ['hour' => $hour, 'minute' => $minute];
+        return ['hour' => $hour, 'minute' => $minute, 'at' => $at];
     }
 
     private function findEvent($hour, $minute)
