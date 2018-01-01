@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    protected $appends = ['next', 'is_active'];
+    protected $appends = ['next', 'status', 'cooldown'];
 
     public function times()
     {
@@ -24,11 +24,16 @@ class Event extends Model
         return [
             'hour' => $time['hour'],
             'minute' => $time['minute'],
-            'total' => $time['hour'] * 60 + $time['minute']
+            'total_minute' => $time['hour'] * 60 + $time['minute']
         ];
     }
 
-    public function getIsActiveAttribute()
+    public function getCooldownAttribute()
+    {
+        return 22;
+    }
+
+    public function getStatusAttribute()
     {   
         $priorToDuration = time() - $this->duration * 60;
         $current = $this->findEvent((int)date('H', $priorToDuration), (int)date('i', $priorToDuration));
@@ -39,11 +44,19 @@ class Event extends Model
         $currentTimeEnd->add(new \DateInterval("PT{$this->duration}M"));
         $currentTimeEnd = $currentTimeEnd->getTimestamp();
 
-        if (time() >= $currentTimeStart && time() <= $currentTimeEnd)
-            return true;
-        return false;
-    }
+        $active = false;
 
+        if (time() >= $currentTimeStart && time() <= $currentTimeEnd)
+            $active = true;
+    
+        $status = [
+            'active' => false,
+            'cooldown' => $active ? floor($currentTimeEnd - time()) : null
+        ];
+    
+
+        return $status;
+    }
     private function timeTilNext()
     {
         $hour = (int)date('H');

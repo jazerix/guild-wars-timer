@@ -102,24 +102,6 @@ export default {
     this.currentlyHappening();
     this.nextTime();
   },
-  watch: {
-    "$parent.time.second": function(second) {
-      var time = this.$parent.time;
-      if (this.event.active) {
-        this.event.time--;
-        if (this.event.time == 0) this.event.active = false;
-      }
-      if (second == 0) {
-        if (!this.event.active) this.currentlyHappening();
-        this.nextTime();
-
-        this.$emit("minutes", {
-          left: this.next.left,
-          id: this.id
-        });
-      }
-    }
-  },
   methods: {
     currentlyHappening() {
       var hour = this.$parent.time.hour;

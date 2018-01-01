@@ -40702,10 +40702,28 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.time.hour = d.getUTCHours();
       this.time.minute = d.getUTCMinutes();
       this.time.second = d.getUTCSeconds();
-      this.events.forEach(function (event, index) {
-        if (event.is_active) {}
+      this.events.forEach(function (event) {
+        if (event.status.active) {
+          event.cooldown--;
+          if (event.cooldown == 0) {
+            event.status.active = false;
+            event.status.cooldown = null;
+          }
+        }
         if (this.time.second == 0) {
-          this.nextTime(index);
+          if (event.next.total_minute > 1) {
+            if (event.next.minute == 0) {
+              event.next.hour--;
+              event.next.minute = 59;
+            } else event.next.minute--;
+            event.next.total_minute--;
+          } else {
+            event.next = this.timeTilNext(event);
+            if (!event.status.active) {
+              event.status.active = true;
+              event.status.cooldown = event.duration * 60;
+            }
+          }
         }
       }.bind(this));
     }.bind(this), 1000);
@@ -40715,17 +40733,84 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     all: function all() {
       axios.get("/events").then(function (response) {
         this.events = response.data;
+        this.startUp();
       }.bind(this));
     },
-    updateMinutesLeft: function updateMinutesLeft(event) {
-      this.events[event.id - 1].minutes_til_next = event.left;
+    startUp: function startUp() {
+      this.events.forEach(function (event) {
+        event.next = this.timeTilNext(event);
+        this.currentlyHappening(event);
+      }.bind(this));
     },
-    nextTime: function nextTime(index) {
-      this.next = this.findEvent(index, 1, 1);
+    findNextEvent: function findNextEvent(event, hour, minute) {
+      var next = null;
+      event.times.forEach(function (time) {
+        if (next != null) return;
+        time = time.split(":");
+        var tHour = parseInt(time[0]);
+        var tMinute = parseInt(time[1]);
+
+        if (hour < tHour || hour == tHour && minute < tMinute) {
+          next = {
+            hour: tHour,
+            minute: tMinute
+          };
+          return;
+        }
+      });
+
+      if (next == null) {
+        var time = event.times[0].split(":");
+        var tHour = parseInt(time[0]);
+        var tMinute = parseInt(time[1]);
+        next = {
+          hour: tHour,
+          minute: tMinute
+        };
+      }
+
+      return next;
     },
-    findEvent: function findEvent(index, hour, minute) {
-      var event = null;
-      this.events[index].times.forEach(function (time) {});
+    timeTilNext: function timeTilNext(event) {
+      var next = this.findNextEvent(event, this.time.hour, this.time.minute);
+      var hour = next.hour - this.time.hour;
+      var minute = next.minute - this.time.minute;
+      if (minute < 0) {
+        minute += 60;
+        hour--;
+      }
+      if (hour < 0) {
+        hour += 23;
+      }
+      return {
+        hour: hour,
+        minute: minute,
+        total_minute: hour * 60 + minute
+      };
+    },
+    currentlyHappening: function currentlyHappening(event) {
+      var hour = this.time.hour;
+      var minute = this.time.minute;
+      var second = this.time.second;
+      var dt = new Date();
+      dt.setHours(hour, minute, second);
+      dt.setTime(dt.getTime() - 60000 * this.duration);
+
+      var current = this.findNextEvent(event, dt.getHours(), dt.getMinutes());
+      var currentTime = new Date();
+      currentTime.setUTCHours(current.hour, current.minute, 0);
+      var currentTimeEnd = new Date(currentTime.getTime() + 60000 * event.duration);
+
+      var time = new Date();
+      time.setUTCHours(hour, minute, second);
+
+      if (time.getTime() >= currentTime.getTime() && time.getTime() <= currentTimeEnd.getTime()) {
+        event.status.active = true;
+        event.status.cooldown = Math.floor((currentTimeEnd.getTime() - time.getTime()) / 1000);
+      } else {
+        event.status.active = false;
+        event.status.cooldown = null;
+      }
     }
   }
 });
@@ -41242,24 +41327,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     this.nextTime();
   },
 
-  watch: {
-    "$parent.time.second": function $parentTimeSecond(second) {
-      var time = this.$parent.time;
-      if (this.event.active) {
-        this.event.time--;
-        if (this.event.time == 0) this.event.active = false;
-      }
-      if (second == 0) {
-        if (!this.event.active) this.currentlyHappening();
-        this.nextTime();
-
-        this.$emit("minutes", {
-          left: this.next.left,
-          id: this.id
-        });
-      }
-    }
-  },
   methods: {
     currentlyHappening: function currentlyHappening() {
       var hour = this.$parent.time.hour;
