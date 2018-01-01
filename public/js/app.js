@@ -40690,8 +40690,26 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
   computed: {
     now: function now() {
-      return _.orderBy(this.events, 'minutes_til_next');
+      /*return _.filter(this.events, function(event){
+              return event.minutes_til_next < 80;
+          });*/
+      //return _.orderBy(this.events, 'minutes_til_next');
     }
+  },
+  mounted: function mounted() {
+    setInterval(function () {
+      var d = new Date();
+      this.time.hour = d.getUTCHours();
+      this.time.minute = d.getUTCMinutes();
+      this.time.second = d.getUTCSeconds();
+      this.events.forEach(function (event, index) {
+        if (event.is_active) {}
+        if (this.time.second == 0) {
+          this.nextTime(index);
+        }
+      }.bind(this));
+    }.bind(this), 1000);
+    this.all();
   },
   methods: {
     all: function all() {
@@ -40701,16 +40719,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     updateMinutesLeft: function updateMinutesLeft(event) {
       this.events[event.id - 1].minutes_til_next = event.left;
+    },
+    nextTime: function nextTime(index) {
+      this.next = this.findEvent(index, 1, 1);
+    },
+    findEvent: function findEvent(index, hour, minute) {
+      var event = null;
+      this.events[index].times.forEach(function (time) {});
     }
-  },
-  mounted: function mounted() {
-    setInterval(function () {
-      var d = new Date();
-      this.time.hour = d.getUTCHours();
-      this.time.minute = d.getUTCMinutes();
-      this.time.second = d.getUTCSeconds();
-    }.bind(this), 1000);
-    this.all();
   }
 });
 
@@ -41235,7 +41251,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       }
       if (second == 0) {
         if (!this.event.active) this.currentlyHappening();
-        this.next.string = this.getNextString();
+        this.nextTime();
 
         this.$emit("minutes", {
           left: this.next.left,

@@ -113,7 +113,7 @@
             <div class="container">
                 <h1 class="title">Happening now...</h1>
                 <div class="columns is-multiline">
-                    <timer v-for="event in now" @minutes="updateMinutesLeft" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration"  />
+                    <timer v-for="event in now" @minutes="updateMinutesLeft" :id="event.id" :key="event.id" :name="event.name" :tag="event.class" :times="event.times" :wiki="event.wiki_link" :location="event.location" :duration="event.duration" />
                 </div>
                 <h1 class="title">Soon...</h1>
                 <h1 class="title">Later...</h1>
@@ -138,20 +138,11 @@ export default {
     };
   },
   computed: {
-      now: function() {
-          return _.orderBy(this.events, 'minutes_til_next');
-      }
-  },
-  methods: {
-    all() {
-      axios.get("/events").then(
-        function(response) {
-            this.events = response.data;
-        }.bind(this)
-      );
-    },
-    updateMinutesLeft(event){
-        this.events[event.id-1].minutes_til_next = event.left;
+    now: function() {
+      /*return _.filter(this.events, function(event){
+              return event.minutes_til_next < 80;
+          });*/
+      //return _.orderBy(this.events, 'minutes_til_next');
     }
   },
   mounted: function() {
@@ -161,10 +152,41 @@ export default {
         this.time.hour = d.getUTCHours();
         this.time.minute = d.getUTCMinutes();
         this.time.second = d.getUTCSeconds();
+        this.events.forEach(
+          function(event, index) {
+            if (event.is_active) {
+            }
+            if (this.time.second == 0) {
+                this.nextTime(index);
+            }
+          }.bind(this)
+        );
       }.bind(this),
       1000
     );
     this.all();
+  },
+  methods: {
+    all() {
+      axios.get("/events").then(
+        function(response) {
+          this.events = response.data;
+        }.bind(this)
+      );
+    },
+    updateMinutesLeft(event) {
+      this.events[event.id - 1].minutes_til_next = event.left;
+    },
+    nextTime(index) {
+        this.next = this.findEvent(index, 1, 1);
+    },
+    findEvent(index, hour, minute)
+    {
+        var event = null;
+        this.events[index].times.forEach(function(time){
+            
+        });
+    }
   }
 };
 </script>

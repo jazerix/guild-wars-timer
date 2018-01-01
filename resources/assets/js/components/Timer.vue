@@ -111,7 +111,7 @@ export default {
       }
       if (second == 0) {
         if (!this.event.active) this.currentlyHappening();
-        this.next.string = this.getNextString();
+        this.nextTime();
 
         this.$emit("minutes", {
           left: this.next.left,

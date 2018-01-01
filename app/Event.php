@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Event extends Model
 {
-    protected $appends = ['minutes_til_next'];
+    protected $appends = ['next', 'is_active'];
 
     public function times()
     {
@@ -18,10 +18,30 @@ class Event extends Model
         return $this->hasMany(EventState::class);
     }
 
-    public function getMinutesTilNextAttribute()
+    public function getNextAttribute()
     {
         $time = $this->timeTilNext();
-        return $time['hour'] * 60 + $time['minute'];
+        return [
+            'hour' => $time['hour'],
+            'minute' => $time['minute'],
+            'total' => $time['hour'] * 60 + $time['minute']
+        ];
+    }
+
+    public function getIsActiveAttribute()
+    {   
+        $priorToDuration = time() - $this->duration * 60;
+        $current = $this->findEvent((int)date('H', $priorToDuration), (int)date('i', $priorToDuration));
+
+        $currentTimeStart = new \DateTime("{$current['hour']}:{$current['minute']}:00");
+        $currentTimeStart = $currentTimeStart->getTimestamp();
+        $currentTimeEnd = new \DateTime("{$current['hour']}:{$current['minute']}:00");
+        $currentTimeEnd->add(new \DateInterval("PT{$this->duration}M"));
+        $currentTimeEnd = $currentTimeEnd->getTimestamp();
+
+        if (time() >= $currentTimeStart && time() <= $currentTimeEnd)
+            return true;
+        return false;
     }
 
     private function timeTilNext()
@@ -63,7 +83,7 @@ class Event extends Model
         }
 
         if (is_null($event)) {
-            $eventTime = explode(':', $time->time_at);
+            $eventTime = explode(':', $this->times[0]->time_at);
             $tHour = (int)$eventTime[0];
             $tMinute = (int)$eventTime[1];
             return [
