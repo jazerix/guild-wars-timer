@@ -1,53 +1,22 @@
 <template>
     <div>
-        <nav class="navbar is-primary is-transparent has-shadow">
+        <nav class="navbar is-primary has-shadow">
             <div class="container">
                 <div class="navbar-brand">
-                    <div class="navbar-burger burger" data-target="navbarExampleTransparentExample">
+                    <span class="navbar-item is-pulled-right" href="https://bulma.io">
+                        <b>Live GW2</b>
+                    </span>
+                    <div @click="toggleMenu()" ref="burger" class="navbar-burger">
                         <span></span>
                         <span></span>
                         <span></span>
                     </div>
                 </div>
-                <div id="navbarExampleTransparentExample" class="navbar-menu">
-                    <div class="navbar-start">
-                        <a class="navbar-item" href="">
-                            {{ time.hour }}:{{ time.minute }}:{{ time.second }}
-                        </a>
-                        <div class="navbar-item has-dropdown is-hoverable">
-                            <a class="navbar-link" href="/documentation/overview/start/">
-                                Docs
-                            </a>
-                            <div class="navbar-dropdown is-boxed">
-                                <a class="navbar-item" href="/documentation/overview/start/">
-                                    Overview
-                                </a>
-                                <a class="navbar-item" href="https://bulma.io/documentation/modifiers/syntax/">
-                                    Modifiers
-                                </a>
-                                <a class="navbar-item" href="https://bulma.io/documentation/columns/basics/">
-                                    Columns
-                                </a>
-                                <a class="navbar-item" href="https://bulma.io/documentation/layout/container/">
-                                    Layout
-                                </a>
-                                <a class="navbar-item" href="https://bulma.io/documentation/form/general/">
-                                    Form
-                                </a>
-                                <hr class="navbar-divider">
-                                <a class="navbar-item" href="https://bulma.io/documentation/elements/box/">
-                                    Elements
-                                </a>
-                                <a class="navbar-item is-active" href="https://bulma.io/documentation/components/breadcrumb/">
-                                    Components
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <div ref="navbar" class="navbar-menu">
 
                     <div class="navbar-end">
                         <div class="navbar-item">
-                            <a class="button is-link">
+                            <a class="button is-link is-flex-touch">
                                 <span class="icon is-small">
                                     <i class="fa fa-bell"></i>
                                 </span>
@@ -79,31 +48,24 @@
                 </div>
             </div>
         </nav>
-        <section style="background-image: url(/imgs/balthazar.jpg);background-position: 50% 22%;" class="hero is-primary">
-            <div class="hero-body">
-                <div class="container">
-                    <h1 class="title">
-                        Hero title
-                    </h1>
-                    <h2 class="subtitle">
-                        Hero subtitle
-                    </h2>
-                </div>
-            </div>
+        <section class="hero balthazar is-primary">
         </section>
         <nav class="navbar has-shadow">
             <div class="container">
                 <div class="navbar-tabs">
-                    <a class="navbar-item is-tab is-active" href="https://bulma.io/documentation/layout/container/">
+                    <a class="navbar-item is-tab is-active">
                         All
                     </a>
-                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
+                    <a class="navbar-item is-tab">
                         World Bosses
                     </a>
-                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
+                    <a class="navbar-item is-tab">
+                        Classic
+                    </a>
+                    <a class="navbar-item is-tab">
                         Heart of Thorns
                     </a>
-                    <a class="navbar-item is-tab" href="https://bulma.io/documentation/layout/level/">
+                    <a class="navbar-item is-tab">
                         Path of Fire
                     </a>
                 </div>
@@ -140,7 +102,7 @@ export default {
         minute: new Date().getUTCMinutes(),
         second: new Date().getUTCSeconds(),
         timestamp: new Date().getTime()
-      },
+      }
     };
   },
   computed: {
@@ -184,8 +146,9 @@ export default {
         this.time.minute = d.getUTCMinutes();
         this.time.second = d.getUTCSeconds();
         let newTime = d.getTime();
-        if ((newTime / 1000- this.time.timestamp / 1000) > 5) //out of sync
-            this.startUp();
+        if (newTime / 1000 - this.time.timestamp / 1000 > 5)
+          //out of sync
+          this.startUp();
         this.time.timestamp = newTime;
         this.events.forEach(
           function(event) {
@@ -218,6 +181,10 @@ export default {
     );
   },
   methods: {
+    toggleMenu() {
+        this.$refs.burger.classList.toggle('is-active');
+        this.$refs.navbar.classList.toggle('is-active');
+    },
     all() {
       axios.get("/events").then(
         function(response) {
@@ -319,4 +286,10 @@ export default {
 };
 </script>
 
-
+<style>
+.balthazar {
+  background-image: url(/imgs/balthazar.jpg);
+  background-position: 50% 22%;
+  height: 120px;
+}
+</style>
