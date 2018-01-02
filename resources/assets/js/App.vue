@@ -138,8 +138,9 @@ export default {
       time: {
         hour: new Date().getUTCHours(),
         minute: new Date().getUTCMinutes(),
-        second: new Date().getUTCSeconds()
-      }
+        second: new Date().getUTCSeconds(),
+        timestamp: new Date().getTime()
+      },
     };
   },
   computed: {
@@ -182,6 +183,10 @@ export default {
         this.time.hour = d.getUTCHours();
         this.time.minute = d.getUTCMinutes();
         this.time.second = d.getUTCSeconds();
+        let newTime = d.getTime();
+        if ((newTime / 1000- this.time.timestamp / 1000) > 5) //out of sync
+            this.startUp();
+        this.time.timestamp = newTime;
         this.events.forEach(
           function(event) {
             if (event.status.active) {

@@ -40688,7 +40688,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       time: {
         hour: new Date().getUTCHours(),
         minute: new Date().getUTCMinutes(),
-        second: new Date().getUTCSeconds()
+        second: new Date().getUTCSeconds(),
+        timestamp: new Date().getTime()
       }
     };
   },
@@ -40723,6 +40724,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.time.hour = d.getUTCHours();
       this.time.minute = d.getUTCMinutes();
       this.time.second = d.getUTCSeconds();
+      var newTime = d.getTime();
+      if (newTime / 1000 - this.time.timestamp / 1000 > 5) //out of sync
+        this.startUp();
+      this.time.timestamp = newTime;
       this.events.forEach(function (event) {
         if (event.status.active) {
           event.status.cooldown--;
