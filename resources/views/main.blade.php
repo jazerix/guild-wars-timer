@@ -17,6 +17,14 @@
         <div id="app">
             <app></app>
         </div>
+        
+        <script>
+        if('serviceWorker' in navigator) {
+        navigator.serviceWorker
+                .register('/sw.js', {scope: '/'});
+        }
+        </script>
         <script src="{{ asset('js/app.js') }}"></script>
+        
     </body>
 </html>
