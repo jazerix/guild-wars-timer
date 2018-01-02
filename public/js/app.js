@@ -40698,7 +40698,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       return _.chain(this.events).filter(function (event) {
         return event.status.active == true;
       }).orderBy(function (event) {
-        return event.next.total_minute;
+        return event.status.cooldown;
       }).value();
     },
     soon: function soon() {
@@ -40718,6 +40718,36 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
   },
   mounted: function mounted() {
     this.all();
+    setInterval(function () {
+      var d = new Date();
+      this.time.hour = d.getUTCHours();
+      this.time.minute = d.getUTCMinutes();
+      this.time.second = d.getUTCSeconds();
+      this.events.forEach(function (event) {
+        if (event.status.active) {
+          event.status.cooldown--;
+          if (event.status.cooldown == 0) {
+            event.status.active = false;
+            event.status.cooldown = null;
+          }
+        }
+        if (this.time.second == 0) {
+          if (event.next.total_minute > 1) {
+            if (event.next.minute == 0) {
+              event.next.hour--;
+              event.next.minute = 59;
+            } else event.next.minute--;
+            event.next.total_minute--;
+          } else {
+            event.next = this.timeTilNext(event);
+            if (!event.status.active) {
+              event.status.active = true;
+              event.status.cooldown = event.duration * 60;
+            }
+          }
+        }
+      }.bind(this));
+    }.bind(this), 1000);
   },
   methods: {
     all: function all() {
@@ -40731,36 +40761,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         event.next = this.timeTilNext(event);
         this.currentlyHappening(event);
       }.bind(this));
-      setInterval(function () {
-        var d = new Date();
-        this.time.hour = d.getUTCHours();
-        this.time.minute = d.getUTCMinutes();
-        this.time.second = d.getUTCSeconds();
-        this.events.forEach(function (event) {
-          if (event.status.active) {
-            event.status.cooldown--;
-            if (event.cooldown == 0) {
-              event.status.active = false;
-              event.status.cooldown = null;
-            }
-          }
-          if (this.time.second == 0) {
-            if (event.next.total_minute > 1) {
-              if (event.next.minute == 0) {
-                event.next.hour--;
-                event.next.minute = 59;
-              } else event.next.minute--;
-              event.next.total_minute--;
-            } else {
-              event.next = this.timeTilNext(event);
-              if (!event.status.active) {
-                event.status.active = true;
-                event.status.cooldown = event.duration * 60;
-              }
-            }
-          }
-        }.bind(this));
-      }.bind(this), 1000);
     },
     findNextEvent: function findNextEvent(event, hour, minute) {
       var next = null;
@@ -41149,7 +41149,10 @@ var staticRenderFns = [
       "section",
       {
         staticClass: "hero is-primary",
-        staticStyle: { "background-image": "url(/imgs/balthazar.jpg)" }
+        staticStyle: {
+          "background-image": "url(/imgs/balthazar.jpg)",
+          "background-position": "50% 22%"
+        }
       },
       [
         _c("div", { staticClass: "hero-body" }, [
