@@ -30919,6 +30919,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -31210,7 +31212,11 @@ var render = function() {
               _vm._v(" "),
               _vm._m(2),
               _vm._v(" "),
-              _vm._m(3)
+              _vm._m(3),
+              _vm._v(" "),
+              _c("a", { staticClass: "navbar-item" }, [
+                _vm._v("\n            API\n          ")
+              ])
             ])
           ])
         ])

@@ -13,7 +13,6 @@
           </div>
         </div>
         <div ref="navbar" class="navbar-menu">
-
           <div class="navbar-end">
             <div class="navbar-item">
               <a @click="switchSort()" class="button is-link is-flex-touch">
@@ -58,6 +57,9 @@
                 </div>
               </div>
             </div>
+            <a class="navbar-item">
+              API
+            </a>
           </div>
         </div>
       </div>
