@@ -16,6 +16,13 @@
 
           <div class="navbar-end">
             <div class="navbar-item">
+              <a @click="switchSort()" class="button is-link is-flex-touch">
+                <span class="icon is-small">
+                  <i class="fa" :class="sorting"></i>
+                </span>
+              </a>
+            </div>
+            <div class="navbar-item">
               <a class="button is-link is-flex-touch">
                 <span class="icon is-small">
                   <i class="fa fa-cog"></i>
@@ -82,22 +89,22 @@
       <div class="container">
         <h1 class="title">Happening now...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 class="title">Soon...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in soon" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @copied="copyNotification()" v-for="event in soon" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 class="title">Later...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in later" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @copied="copyNotification()" v-for="event in later" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
       </div>
     </section>
     <transition name="fade">
-    <div v-if="copied" class="notification is-primary popup-notification">
-      Successfully copied waypoint to clipboard.
-    </div>
+      <div v-if="copied" class="notification is-primary popup-notification">
+        Successfully copied waypoint to clipboard.
+      </div>
     </transition>
   </div>
 </template>
@@ -114,7 +121,8 @@ export default {
         second: new Date().getUTCSeconds(),
         timestamp: new Date().getTime()
       },
-      copied: false
+      copied: false,
+      sorting: "fa-sort-numeric-asc"
     };
   },
   computed: {
@@ -165,10 +173,12 @@ export default {
         this.events.forEach(
           function(event) {
             if (event.status.active) {
-              event.status.cooldown--;
+              if (event.status.cooldown > 0) event.status.cooldown--;
               if (event.status.cooldown == 0) {
-                event.status.active = false;
-                event.status.cooldown = null;
+                if (!event.has_states) {
+                  event.status.active = false;
+                  event.status.cooldown = null;
+                }
               }
             }
             if (this.time.second == 0) {
@@ -180,6 +190,8 @@ export default {
                 event.next.total_minute--;
               } else {
                 event.next = this.timeTilNext(event);
+                if (event.has_states)
+                  this.currentlyHappening(event);
                 if (!event.status.active) {
                   event.status.active = true;
                   event.status.cooldown = event.duration * 60;
@@ -193,11 +205,30 @@ export default {
     );
   },
   methods: {
+    switchSort() {
+      switch (this.sorting) {
+        case "fa-sort-numeric-asc":
+          this.sorting = "fa-sort-numeric-desc";
+          break;
+        case "fa-sort-numeric-desc":
+          this.sorting = "fa-sort-alpha-asc";
+          break;
+        case "fa-sort-alpha-asc":
+          this.sorting = "fa-sort-alpha-desc";
+          break;
+        case "fa-sort-alpha-desc":
+          this.sorting = "fa-sort-numeric-asc";
+          break;
+      }
+    },
     copyNotification() {
       this.copied = true;
-      setTimeout(function() {
-        this.copied = false;
-      }.bind(this), 3000);
+      setTimeout(
+        function() {
+          this.copied = false;
+        }.bind(this),
+        3000
+      );
     },
     toggleMenu() {
       this.$refs.burger.classList.toggle("is-active");
@@ -219,30 +250,49 @@ export default {
         }.bind(this)
       );
     },
+    currentState(event, hour, minute) {
+      let i = null;
+      event.times.forEach(function(time, index) {
+        if (i != null) return;
+        time = time.time_at.split(":");
+        var tHour = parseInt(time[0]);
+        var tMinute = parseInt(time[1]);
+        if (hour < tHour || (hour == tHour && minute < tMinute)) {
+          i = index;
+          return;
+        }
+      });
+      if (i == 0) i = event.times.length;
+      return event.times[i - 1];
+    },
     findNextEvent(event, hour, minute) {
       var next = null;
       event.times.forEach(function(time) {
         if (next != null) return;
-        time = time.split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
+        var time_at = time.time_at.split(":");
+        var tHour = parseInt(time_at[0]);
+        var tMinute = parseInt(time_at[1]);
 
         if (hour < tHour || (hour == tHour && minute < tMinute)) {
           next = {
             hour: tHour,
-            minute: tMinute
+            minute: tMinute,
+            duration: time.duration,
+            state: time.state
           };
           return;
         }
       });
 
       if (next == null) {
-        var time = event.times[0].split(":");
-        var tHour = parseInt(time[0]);
-        var tMinute = parseInt(time[1]);
+        var time_at = event.times[0].time_at.split(":");
+        var tHour = parseInt(time_at[0]);
+        var tMinute = parseInt(time_at[1]);
         next = {
           hour: tHour,
-          minute: tMinute
+          minute: tMinute,
+          duration: event.times[0].duration,
+          state: event.times[0].state
         };
       }
 
@@ -265,7 +315,9 @@ export default {
         total_minute: hour * 60 + minute,
         at: {
           hour: next.hour,
-          minute: next.minute
+          minute: next.minute,
+          duration: next.duration,
+          state: next.state
         }
       };
     },
@@ -273,6 +325,23 @@ export default {
       var hour = this.time.hour;
       var minute = this.time.minute;
       var second = this.time.second;
+      var time = new Date();
+      time.setUTCHours(hour, minute, second);
+
+      if (event.has_states) {
+        let current = this.currentState(event, hour, minute);
+        let currentTime = current.time_at.split(":");
+        let endTime = new Date();
+        endTime.setUTCHours(currentTime[0], currentTime[1], 0);
+        endTime = new Date(endTime.getTime() + current.duration * 60000);
+
+        event.status.name = current.state;
+        event.status.active = true;
+        event.status.cooldown = Math.floor(
+          (endTime.getTime() - time.getTime()) / 1000
+        );
+        return;
+      }
       var dt = new Date();
       dt.setHours(hour, minute, second);
       dt.setTime(dt.getTime() - 60000 * event.duration);
@@ -283,9 +352,6 @@ export default {
       var currentTimeEnd = new Date(
         currentTime.getTime() + 60000 * event.duration
       );
-
-      var time = new Date();
-      time.setUTCHours(hour, minute, second);
 
       if (
         time.getTime() >= currentTime.getTime() &&
@@ -313,15 +379,17 @@ export default {
 
 .popup-notification {
   position: fixed;
-    right: 10px;
-    bottom: 10px;
+  right: 10px;
+  bottom: 10px;
 }
 
-.fade-enter-active, .fade-leave-active {
+.fade-enter-active,
+.fade-leave-active {
   transition: opacity 0.25s ease-out;
 }
 
-.fade-enter, .fade-leave-to {
+.fade-enter,
+.fade-leave-to {
   opacity: 0;
 }
 </style>

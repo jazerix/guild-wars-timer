@@ -3,7 +3,7 @@
         <div class="timer" :class="tag">
             <div class="boss">
                 <span class="event">
-                    <a target="_blank" :href="wiki">{{ name }}</a>
+                    <a target="_blank" :href="wiki">{{ states ? status.name : name }}</a>
                 </span>
                 <span class="description">{{ location }}</span>
                 <div class="left">
@@ -12,10 +12,11 @@
             </div>
             <div class="panel">
                 <span class="start">
-                    {{ status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
+                    {{  states ? next.at.state : status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
                 </span>
                 <span class="end">
-                    <span>{{ upcoming }}</span>
+                    <span v-if="!states">{{ upcoming }}</span>
+                    <span v-if="states">meta event</span>
                     <ul>
                         <li>
                             <a>
@@ -64,6 +65,9 @@ export default {
     },
     next: {
       type: Object
+    },
+    states: {
+      type: Boolean
     }
   },
   data() {
