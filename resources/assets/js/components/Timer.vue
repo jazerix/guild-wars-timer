@@ -1,43 +1,44 @@
 <template>
-    <div class="column is-6 is-4-tablet is-4-fullhd">
-        <div class="timer" :class="tag">
-            <div class="boss">
-                <span class="event">
-                    <a target="_blank" :href="wiki">{{ name }}</a>
-                </span>
-                <span class="description">{{ location }}</span>
-                <div class="left">
-                    {{ countdown }}
-                </div>
-            </div>
-            <div class="panel">
-                <span class="start">
-                    {{ status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
-                </span>
-                <span class="end">
-                    <span>{{ upcoming }}</span>
-                    <ul>
-                        <li>
-                            <a href="#">
-                                <i class="fa fa-bell" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                        <li :class="{ 'favorite': favorite }">
-                            <a @click="favorite = !favorite">
-                                <i v-if="favorite" class="fa fa-star" aria-hidden="true"></i>
-                                <i v-if="!favorite" class="fa fa-star-o" aria-hidden="true"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </span>
-            </div>
+  <div class="column is-6 is-4-tablet is-4-fullhd">
+    <div class="timer" :class="tag">
+      <div class="boss">
+        <span class="event">
+          <a target="_blank" :href="wiki">{{ states ? status.name : name }}</a>
+        </span>
+        <span class="description">{{ location }}</span>
+        <div class="left">
+          {{ countdown }}
         </div>
+      </div>
+      <div class="panel">
+        <span class="start">
+          {{ states && next.at.state != status.name ? next.at.state : status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
+        </span>
+        <span class="end">
+          <span v-if="!states">{{ upcoming }}</span>
+          <span v-if="states">meta event</span>
+          <ul>
+            <li>
+              <a>
+                <i class="fa fa-bell" aria-hidden="true"></i>
+              </a>
+            </li>
+            <li>
+              <a @click="copyToClipboard()">
+                <i class="fa fa-map-marker" aria-hidden="true"></i>
+              </a>
+            </li>
+            <li :class="{ 'favorite': favorite }">
+              <a @click="favorite = !favorite">
+                <i v-if="favorite" class="fa fa-star" aria-hidden="true"></i>
+                <i v-if="!favorite" class="fa fa-star-o" aria-hidden="true"></i>
+              </a>
+            </li>
+          </ul>
+        </span>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -45,6 +46,9 @@ export default {
   name: "timer",
   props: {
     tag: {
+      type: String
+    },
+    waypoint: {
       type: String
     },
     wiki: {
@@ -61,12 +65,15 @@ export default {
     },
     next: {
       type: Object
+    },
+    states: {
+      type: Boolean
     }
   },
   data() {
-      return {
-          favorite: false
-      }
+    return {
+      favorite: false
+    };
   },
   computed: {
     countdown() {
@@ -85,6 +92,10 @@ export default {
     }
   },
   methods: {
+    copyToClipboard() {
+      copy(this.waypoint);
+      this.$emit("copied");
+    },
     formatNext(next) {
       if (next.hour > 0)
         return (
@@ -109,6 +120,13 @@ export default {
       let hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
       let minute =
         form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
+      let d = new Date();
+      d.setHours(hour, minute);
+      let options = {
+        hour: "2-digit",
+        minute: "2-digit"
+      };
+      return d.toLocaleTimeString([], options);
       return hour + ":" + minute;
     }
   }

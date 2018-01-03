@@ -12,13 +12,13 @@
     "devDependencies": {
         "axios": "^0.17",
         "cross-env": "^5.1",
-        "jquery": "^3.2",
         "laravel-mix": "^1.0",
         "lodash": "^4.17.4",
         "vue": "^2.5.7"
     },
     "dependencies": {
         "bulma": "^0.6.1",
+        "copy-to-clipboard": "^3.0.8",
         "jquery-parallax.js": "^1.5.0"
     }
 }

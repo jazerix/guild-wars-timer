@@ -16,6 +16,8 @@ class CreateEventTimesTable extends Migration
         Schema::create('event_times', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('event_id');
+            $table->string('state')->nullable();
+            $table->integer('duration')->nullable();
             $table->time('time_at');
 
             $table->foreign('event_id')->references('id')->on('events');
