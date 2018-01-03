@@ -3,7 +3,7 @@
     <div class="timer" :class="tag">
       <div class="boss">
         <span class="event">
-          <a target="_blank" :href="wiki">{{ states ? status.name : name }}</a>
+          <a target="_blank" :href="wiki">{{ name }}</a>
         </span>
         <span class="description">{{ location }}</span>
         <div class="left">

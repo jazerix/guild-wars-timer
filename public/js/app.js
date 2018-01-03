@@ -31119,6 +31119,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         endTime = new Date(endTime.getTime() + _current.duration * 60000);
 
         event.status.name = _current.state;
+        event.name = event.status.name;
         event.status.active = true;
         event.status.cooldown = Math.floor((endTime.getTime() - time.getTime()) / 1000);
         return;
@@ -31714,7 +31715,7 @@ var render = function() {
       _c("div", { staticClass: "boss" }, [
         _c("span", { staticClass: "event" }, [
           _c("a", { attrs: { target: "_blank", href: _vm.wiki } }, [
-            _vm._v(_vm._s(_vm.states ? _vm.status.name : _vm.name))
+            _vm._v(_vm._s(_vm.name))
           ])
         ]),
         _vm._v(" "),

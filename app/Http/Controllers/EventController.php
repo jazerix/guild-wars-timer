@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Event;
 
 class EventController extends Controller
 {
     public function all()
     {
-        return Event::with(['times'])->get()->toArray();
+        $events = Event::with(['times'])->get();
+        return $events->each(function ($item) {
+            $item->name = is_null($item->status['name']) ? $item->name : $item->status['name'];
+        });
+        return $events;
     }
 }

@@ -360,6 +360,7 @@ export default {
         endTime = new Date(endTime.getTime() + current.duration * 60000);
 
         event.status.name = current.state;
+        event.name = event.status.name;
         event.status.active = true;
         event.status.cooldown = Math.floor(
           (endTime.getTime() - time.getTime()) / 1000
