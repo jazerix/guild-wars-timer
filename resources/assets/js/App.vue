@@ -1,94 +1,105 @@
 <template>
-    <div>
-        <nav class="navbar is-primary has-shadow">
-            <div class="container">
-                <div class="navbar-brand">
-                    <span class="navbar-item is-pulled-right" href="https://bulma.io">
-                        <b>Live GW2</b>
-                    </span>
-                    <div @click="toggleMenu()" ref="burger" class="navbar-burger">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </div>
-                </div>
-                <div ref="navbar" class="navbar-menu">
+  <div>
+    <nav class="navbar is-primary has-shadow">
+      <div class="container">
+        <div class="navbar-brand">
+          <span class="navbar-item is-pulled-right" href="https://bulma.io">
+            <b>Live GW2</b>
+          </span>
+          <div @click="toggleMenu()" ref="burger" class="navbar-burger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+        <div ref="navbar" class="navbar-menu">
 
-                    <div class="navbar-end">
-                        <div class="navbar-item">
-                            <a class="button is-link is-flex-touch">
-                                <span class="icon is-small">
-                                    <i class="fa fa-bell"></i>
-                                </span>
-                            </a>
-                        </div>
-                        <div class="navbar-item is-hoverable">
-                            <div class="field is-grouped" style="margin:0px;">
-                                <p class="control">
-                                    Day
-                                </p>
-                                <p class="control">
-                                    <progress class="progress is-small" style="width:100px;position: relative;top: 50%;transform: translateY(-50%);" value="15" max="100">15%</progress>
-                                </p>
-                                <p class="control">
-                                    Night
-                                </p>
-                            </div>
-                            <div class="navbar-dropdown is-boxed">
-                                <div class="navbar-item">
-                                    <div>
-                                        <small>
-                                            Day ends in 20 minutes
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <a class="button is-link is-flex-touch">
+                <span class="icon is-small">
+                  <i class="fa fa-cog"></i>
+                </span>
+              </a>
             </div>
-        </nav>
-        <section class="hero balthazar is-primary">
-        </section>
-        <nav class="navbar has-shadow">
-            <div class="container">
-                <div class="navbar-tabs">
-                    <a class="navbar-item is-tab is-active">
-                        All
-                    </a>
-                    <a class="navbar-item is-tab">
-                        World Bosses
-                    </a>
-                    <a class="navbar-item is-tab">
-                        Classic
-                    </a>
-                    <a class="navbar-item is-tab">
-                        Heart of Thorns
-                    </a>
-                    <a class="navbar-item is-tab">
-                        Path of Fire
-                    </a>
-                </div>
+            <div class="navbar-item">
+              <a class="button is-link is-flex-touch">
+                <span class="icon is-small">
+                  <i class="fa fa-bell"></i>
+                </span>
+              </a>
             </div>
-        </nav>
-        <section class="section">
-            <div class="container">
-                <h1 class="title">Happening now...</h1>
-                <div class="columns is-multiline">
-                    <timer v-for="event in now" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
+            <div class="navbar-item is-hoverable">
+              <div class="field is-grouped" style="margin:0px;">
+                <p class="control">
+                  Day
+                </p>
+                <p class="control">
+                  <progress class="progress is-small" style="width:100px;position: relative;top: 50%;transform: translateY(-50%);" value="15" max="100">15%</progress>
+                </p>
+                <p class="control">
+                  Night
+                </p>
+              </div>
+              <div class="navbar-dropdown is-boxed">
+                <div class="navbar-item">
+                  <div>
+                    <small>
+                      Day ends in 20 minutes
+                    </small>
+                  </div>
                 </div>
-                <h1 class="title">Soon...</h1>
-                <div class="columns is-multiline">
-                    <timer v-for="event in soon" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
-                </div>
-                <h1 class="title">Later...</h1>
-                <div class="columns is-multiline">
-                    <timer v-for="event in later" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :location="event.location" :status="event.status" :next="event.next" />
-                </div>
-
+              </div>
             </div>
-        </section>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section class="hero balthazar is-primary">
+    </section>
+    <nav class="navbar has-shadow">
+      <div class="container">
+        <div class="navbar-tabs">
+          <a class="navbar-item is-tab is-active">
+            All
+          </a>
+          <a class="navbar-item is-tab">
+            World Bosses
+          </a>
+          <a class="navbar-item is-tab">
+            Classic
+          </a>
+          <a class="navbar-item is-tab">
+            Heart of Thorns
+          </a>
+          <a class="navbar-item is-tab">
+            Path of Fire
+          </a>
+        </div>
+      </div>
+    </nav>
+    <section class="section">
+      <div class="container">
+        <h1 class="title">Happening now...</h1>
+        <div class="columns is-multiline">
+          <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+        </div>
+        <h1 class="title">Soon...</h1>
+        <div class="columns is-multiline">
+          <timer @copied="copyNotification()" v-for="event in soon" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+        </div>
+        <h1 class="title">Later...</h1>
+        <div class="columns is-multiline">
+          <timer @copied="copyNotification()" v-for="event in later" :key="event.id" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+        </div>
+      </div>
+    </section>
+    <transition name="fade">
+    <div v-if="copied" class="notification is-primary popup-notification">
+      Successfully copied waypoint to clipboard.
     </div>
+    </transition>
+  </div>
 </template>
 
 <script>
@@ -102,7 +113,8 @@ export default {
         minute: new Date().getUTCMinutes(),
         second: new Date().getUTCSeconds(),
         timestamp: new Date().getTime()
-      }
+      },
+      copied: false
     };
   },
   computed: {
@@ -181,9 +193,15 @@ export default {
     );
   },
   methods: {
+    copyNotification() {
+      this.copied = true;
+      setTimeout(function() {
+        this.copied = false;
+      }.bind(this), 3000);
+    },
     toggleMenu() {
-        this.$refs.burger.classList.toggle('is-active');
-        this.$refs.navbar.classList.toggle('is-active');
+      this.$refs.burger.classList.toggle("is-active");
+      this.$refs.navbar.classList.toggle("is-active");
     },
     all() {
       axios.get("/events").then(
@@ -291,5 +309,19 @@ export default {
   background-image: url(/imgs/balthazar.jpg);
   background-position: 50% 22%;
   height: 120px;
+}
+
+.popup-notification {
+  position: fixed;
+    right: 10px;
+    bottom: 10px;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.25s ease-out;
+}
+
+.fade-enter, .fade-leave-to {
+  opacity: 0;
 }
 </style>

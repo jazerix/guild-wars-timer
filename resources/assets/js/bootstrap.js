@@ -8,8 +8,8 @@ window._ = require('lodash');
  */
 
 try {
-    window.$ = window.jQuery = require('jquery');
-
+    window.copy = require('copy-to-clipboard');
+    
 } catch (e) {}
 
 /**

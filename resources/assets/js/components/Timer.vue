@@ -18,12 +18,12 @@
                     <span>{{ upcoming }}</span>
                     <ul>
                         <li>
-                            <a href="#">
+                            <a>
                                 <i class="fa fa-bell" aria-hidden="true"></i>
                             </a>
                         </li>
                         <li>
-                            <a href="#">
+                            <a @click="copyToClipboard()">
                                 <i class="fa fa-map-marker" aria-hidden="true"></i>
                             </a>
                         </li>
@@ -45,6 +45,9 @@ export default {
   name: "timer",
   props: {
     tag: {
+      type: String
+    },
+    waypoint: {
       type: String
     },
     wiki: {
@@ -85,6 +88,10 @@ export default {
     }
   },
   methods: {
+    copyToClipboard() {
+        copy(this.waypoint);
+        this.$emit('copied');
+    },
     formatNext(next) {
       if (next.hour > 0)
         return (
@@ -109,6 +116,15 @@ export default {
       let hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
       let minute =
         form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
+
+        
+      let d = new Date();
+      d.setHours(hour, minute);
+      let options = {
+        hour: '2-digit',
+        minute:'2-digit',
+      };
+      return d.toLocaleTimeString([], options);
       return hour + ":" + minute;
     }
   }
