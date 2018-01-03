@@ -30933,16 +30933,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         if (this.category == "all") return event.status.active == true;
         return event.status.active == true && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return event.status.cooldown;
-      }).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.status.cooldown : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     },
     soon: function soon() {
       return _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.next.total_minute <= 15 && !event.status.active;
         return event.next.total_minute <= 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return event.next.total_minute;
-      }).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     },
     later: function later() {
       return _.chain(this.events).filter(function (event) {

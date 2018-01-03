@@ -136,8 +136,11 @@ export default {
           }.bind(this)
         )
         .orderBy(function(event) {
-          return event.status.cooldown;
-        })
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.status.cooldown
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3])
         .value();
     },
     soon: function() {
@@ -153,9 +156,14 @@ export default {
             );
           }.bind(this)
         )
-        .orderBy(function(event) {
-          return event.next.total_minute;
-        })
+        .orderBy(
+          function(event) {
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.next.total_minute
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3]
+        )
         .value();
     },
     later: function() {
