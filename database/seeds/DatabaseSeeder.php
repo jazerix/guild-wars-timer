@@ -340,13 +340,13 @@ class DatabaseSeeder extends Seeder
             ['time_at' => '23:30', 'duration' => 75, 'state' => 'Pylons'],
         ]);
 
-        $auricBasin = \App\Event::create([
+        $verdantBrink = \App\Event::create([
             'name' => 'Night Bosses',
             'location' => 'Verdant Brink',
             'type' => 'hot',
             'has_states' => true,
             'waypoint_link' => '[&BAgIAAA=]',
-            'wiki_link' => 'https://wiki.guildwars2.com/wiki/Auric_Basin',
+            'wiki_link' => 'https://wiki.guildwars2.com/wiki/Verdant_Brink',
             'class' => 'wyvern'
         ])->times()->createMany([
             ['time_at' => '0:10', 'duration' => 20, 'state' => 'Night Bosses'],
@@ -385,6 +385,76 @@ class DatabaseSeeder extends Seeder
             ['time_at' => '22:10', 'duration' => 20, 'state' => 'Night Bosses'],
             ['time_at' => '22:30', 'duration' => 75, 'state' => 'Daytime'],
             ['time_at' => '23:45', 'duration' => 25, 'state' => 'Night']
+        ]);
+
+        $tangledDepths = \App\Event::create([
+            'name' => 'Chak Gerent',
+            'location' => 'Tangled Depths',
+            'type' => 'hot',
+            'has_states' => true,
+            'waypoint_link' => '[&BEkIAAA=]',
+            'wiki_link' => 'https://wiki.guildwars2.com/wiki/Tangled_Depths',
+            'class' => 'chak'
+        ])->times()->createMany([
+            ['time_at' => '0:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '0:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '0:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '2:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '2:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '2:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '4:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '4:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '4:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '6:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '6:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '6:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '8:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '8:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '8:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '10:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '10:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '10:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '12:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '12:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '12:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '14:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '14:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '14:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '16:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '16:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '16:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '18:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '18:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '18:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '20:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '20:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '20:50', 'duration' => 95, 'state' => 'Help the Outposts'],
+            ['time_at' => '22:25', 'duration' => 5, 'state' => 'Prep'],
+            ['time_at' => '22:30', 'duration' => 20, 'state' => 'Chat Gerent'],
+            ['time_at' => '22:50', 'duration' => 95, 'state' => 'Help the Outposts']
+        ]);
+
+        $tangledDepths = \App\Event::create([
+            'name' => 'Modremoth',
+            'location' => 'Dragon\'s Stand',
+            'type' => 'hot',
+            'has_states' => true,
+            'waypoint_link' => '[&BHoIAAA=]',
+            'wiki_link' => 'https://wiki.guildwars2.com/wiki/Dragon\'s_Stand',
+            'class' => 'mordremoth'
+        ])->times()->createMany([
+            ['time_at' => '1:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '3:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '5:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '7:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '9:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '11:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '13:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '15:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '17:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '19:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '21:30', 'duration' => 120, 'state' => 'Beginning'],
+            ['time_at' => '23:30', 'duration' => 120, 'state' => 'Beginning']
         ]);
     }
 }

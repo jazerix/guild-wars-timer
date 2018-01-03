@@ -30922,31 +30922,35 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         timestamp: new Date().getTime()
       },
       copied: false,
-      sorting: "fa-sort-numeric-asc"
+      sorting: "fa-sort-numeric-asc",
+      category: "all"
     };
   },
 
   computed: {
     now: function now() {
       return _.chain(this.events).filter(function (event) {
-        return event.status.active == true;
-      }).orderBy(function (event) {
+        if (this.category == "all") return event.status.active == true;
+        return event.status.active == true && this.category == event.type;
+      }.bind(this)).orderBy(function (event) {
         return event.status.cooldown;
       }).value();
     },
     soon: function soon() {
       return _.chain(this.events).filter(function (event) {
-        return event.next.total_minute <= 15 && !event.status.active;
-      }).orderBy(function (event) {
+        if (this.category == "all") return event.next.total_minute <= 15 && !event.status.active;
+        return event.next.total_minute <= 15 && !event.status.active && this.category == event.type;
+      }.bind(this)).orderBy(function (event) {
         return event.next.total_minute;
       }).value();
     },
     later: function later() {
       return _.chain(this.events).filter(function (event) {
-        return event.next.total_minute > 15 && !event.status.active;
-      }).orderBy(function (event) {
-        return event.next.total_minute;
-      }).value();
+        if (this.category == "all") return event.next.total_minute > 15 && !event.status.active;
+        return event.next.total_minute > 15 && !event.status.active && this.category == event.type;
+      }.bind(this)).orderBy(function (event) {
+        return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
+      }.bind(this), this.sorting.split('-')[3]).value();
     }
   },
   mounted: function mounted() {
@@ -31203,11 +31207,99 @@ var render = function() {
       _vm._v(" "),
       _c("section", { staticClass: "hero balthazar is-primary" }),
       _vm._v(" "),
-      _vm._m(4),
+      _c("nav", { staticClass: "navbar has-shadow" }, [
+        _c("div", { staticClass: "container" }, [
+          _c("div", { staticClass: "navbar-tabs" }, [
+            _c(
+              "a",
+              {
+                staticClass: "navbar-item is-tab",
+                class: { "is-active": _vm.category == "all" },
+                on: {
+                  click: function($event) {
+                    _vm.category = "all"
+                  }
+                }
+              },
+              [_vm._v("\n          All\n        ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "a",
+              {
+                staticClass: "navbar-item is-tab",
+                class: { "is-active": _vm.category == "world" },
+                on: {
+                  click: function($event) {
+                    _vm.category = "world"
+                  }
+                }
+              },
+              [_vm._v("\n          World Bosses\n        ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "a",
+              {
+                staticClass: "navbar-item is-tab",
+                class: { "is-active": _vm.category == "classic" },
+                on: {
+                  click: function($event) {
+                    _vm.category = "classic"
+                  }
+                }
+              },
+              [_vm._v("\n          Classic\n        ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "a",
+              {
+                staticClass: "navbar-item is-tab",
+                class: { "is-active": _vm.category == "hot" },
+                on: {
+                  click: function($event) {
+                    _vm.category = "hot"
+                  }
+                }
+              },
+              [_vm._v("\n          Heart of Thorns\n        ")]
+            ),
+            _vm._v(" "),
+            _c(
+              "a",
+              {
+                staticClass: "navbar-item is-tab",
+                class: { "is-active": _vm.category == "pof" },
+                on: {
+                  click: function($event) {
+                    _vm.category = "pof"
+                  }
+                }
+              },
+              [_vm._v("\n          Path of Fire\n        ")]
+            )
+          ])
+        ])
+      ]),
       _vm._v(" "),
       _c("section", { staticClass: "section" }, [
         _c("div", { staticClass: "container" }, [
-          _c("h1", { staticClass: "title" }, [_vm._v("Happening now...")]),
+          _c(
+            "h1",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.now.length > 0,
+                  expression: "now.length > 0"
+                }
+              ],
+              staticClass: "title"
+            },
+            [_vm._v("Happening now...")]
+          ),
           _vm._v(" "),
           _c(
             "div",
@@ -31234,7 +31326,21 @@ var render = function() {
             })
           ),
           _vm._v(" "),
-          _c("h1", { staticClass: "title" }, [_vm._v("Soon...")]),
+          _c(
+            "h1",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.soon.length > 0,
+                  expression: "soon.length > 0"
+                }
+              ],
+              staticClass: "title"
+            },
+            [_vm._v("Soon...")]
+          ),
           _vm._v(" "),
           _c(
             "div",
@@ -31261,7 +31367,21 @@ var render = function() {
             })
           ),
           _vm._v(" "),
-          _c("h1", { staticClass: "title" }, [_vm._v("Later...")]),
+          _c(
+            "h1",
+            {
+              directives: [
+                {
+                  name: "show",
+                  rawName: "v-show",
+                  value: _vm.later.length > 0,
+                  expression: "later.length > 0"
+                }
+              ],
+              staticClass: "title"
+            },
+            [_vm._v("Later...")]
+          ),
           _vm._v(" "),
           _c(
             "div",
@@ -31389,36 +31509,6 @@ var staticRenderFns = [
                 "\n                    Day ends in 20 minutes\n                  "
               )
             ])
-          ])
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("nav", { staticClass: "navbar has-shadow" }, [
-      _c("div", { staticClass: "container" }, [
-        _c("div", { staticClass: "navbar-tabs" }, [
-          _c("a", { staticClass: "navbar-item is-tab is-active" }, [
-            _vm._v("\n          All\n        ")
-          ]),
-          _vm._v(" "),
-          _c("a", { staticClass: "navbar-item is-tab" }, [
-            _vm._v("\n          World Bosses\n        ")
-          ]),
-          _vm._v(" "),
-          _c("a", { staticClass: "navbar-item is-tab" }, [
-            _vm._v("\n          Classic\n        ")
-          ]),
-          _vm._v(" "),
-          _c("a", { staticClass: "navbar-item is-tab" }, [
-            _vm._v("\n          Heart of Thorns\n        ")
-          ]),
-          _vm._v(" "),
-          _c("a", { staticClass: "navbar-item is-tab" }, [
-            _vm._v("\n          Path of Fire\n        ")
           ])
         ])
       ])
@@ -31584,7 +31674,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
   methods: {
     copyToClipboard: function copyToClipboard() {
       copy(this.waypoint);
-      this.$emit('copied');
+      this.$emit("copied");
     },
     formatNext: function formatNext(next) {
       if (next.hour > 0) return "in " + next.hour + " hour" + (next.hour == 1 ? "" : "s") + ", " + next.minute + " minute" + (next.minute == 1 ? "" : "s");
@@ -31599,12 +31689,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       form.setUTCMinutes(t.minute);
       var hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
       var minute = form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
-
       var d = new Date();
       d.setHours(hour, minute);
       var options = {
-        hour: '2-digit',
-        minute: '2-digit'
+        hour: "2-digit",
+        minute: "2-digit"
       };
       return d.toLocaleTimeString([], options);
       return hour + ":" + minute;
@@ -31634,24 +31723,22 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "left" }, [
-          _vm._v(
-            "\n                " + _vm._s(_vm.countdown) + "\n            "
-          )
+          _vm._v("\n        " + _vm._s(_vm.countdown) + "\n      ")
         ])
       ]),
       _vm._v(" "),
       _c("div", { staticClass: "panel" }, [
         _c("span", { staticClass: "start" }, [
           _vm._v(
-            "\n                " +
+            "\n        " +
               _vm._s(
-                _vm.states
+                _vm.states && _vm.next.at.state != _vm.status.name
                   ? _vm.next.at.state
                   : _vm.status.active ? "Next" : "Starts"
               ) +
               " at " +
               _vm._s(_vm._f("time")(_vm.next.at)) +
-              "\n            "
+              "\n      "
           )
         ]),
         _vm._v(" "),

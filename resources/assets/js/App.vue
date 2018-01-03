@@ -67,19 +67,19 @@
     <nav class="navbar has-shadow">
       <div class="container">
         <div class="navbar-tabs">
-          <a class="navbar-item is-tab is-active">
+          <a @click="category = 'all'" class="navbar-item is-tab" :class="{ 'is-active': category == 'all' }">
             All
           </a>
-          <a class="navbar-item is-tab">
+          <a @click="category = 'world'" class="navbar-item is-tab" :class="{ 'is-active': category == 'world' }">
             World Bosses
           </a>
-          <a class="navbar-item is-tab">
+          <a @click="category = 'classic'" class="navbar-item is-tab" :class="{ 'is-active': category == 'classic' }">
             Classic
           </a>
-          <a class="navbar-item is-tab">
+          <a @click="category = 'hot'" class="navbar-item is-tab" :class="{ 'is-active': category == 'hot' }">
             Heart of Thorns
           </a>
-          <a class="navbar-item is-tab">
+          <a @click="category = 'pof'" class="navbar-item is-tab" :class="{ 'is-active': category == 'pof' }">
             Path of Fire
           </a>
         </div>
@@ -87,15 +87,15 @@
     </nav>
     <section class="section">
       <div class="container">
-        <h1 class="title">Happening now...</h1>
+        <h1 v-show="now.length > 0" class="title">Happening now...</h1>
         <div class="columns is-multiline">
           <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
-        <h1 class="title">Soon...</h1>
+        <h1 v-show="soon.length > 0" class="title">Soon...</h1>
         <div class="columns is-multiline">
           <timer @copied="copyNotification()" v-for="event in soon" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
-        <h1 class="title">Later...</h1>
+        <h1 v-show="later.length > 0" class="title">Later...</h1>
         <div class="columns is-multiline">
           <timer @copied="copyNotification()" v-for="event in later" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
@@ -122,15 +122,19 @@ export default {
         timestamp: new Date().getTime()
       },
       copied: false,
-      sorting: "fa-sort-numeric-asc"
+      sorting: "fa-sort-numeric-asc",
+      category: "all"
     };
   },
   computed: {
     now: function() {
       return _.chain(this.events)
-        .filter(function(event) {
-          return event.status.active == true;
-        })
+        .filter(
+          function(event) {
+            if (this.category == "all") return event.status.active == true;
+            return event.status.active == true && this.category == event.type;
+          }.bind(this)
+        )
         .orderBy(function(event) {
           return event.status.cooldown;
         })
@@ -138,9 +142,17 @@ export default {
     },
     soon: function() {
       return _.chain(this.events)
-        .filter(function(event) {
-          return event.next.total_minute <= 15 && !event.status.active;
-        })
+        .filter(
+          function(event) {
+            if (this.category == "all")
+              return event.next.total_minute <= 15 && !event.status.active;
+            return (
+              event.next.total_minute <= 15 &&
+              !event.status.active &&
+              this.category == event.type
+            );
+          }.bind(this)
+        )
         .orderBy(function(event) {
           return event.next.total_minute;
         })
@@ -148,12 +160,20 @@ export default {
     },
     later: function() {
       return _.chain(this.events)
-        .filter(function(event) {
-          return event.next.total_minute > 15 && !event.status.active;
-        })
+        .filter(
+          function(event) {
+            if (this.category == "all")
+              return event.next.total_minute > 15 && !event.status.active;
+            return (
+              event.next.total_minute > 15 &&
+              !event.status.active &&
+              this.category == event.type
+            );
+          }.bind(this)
+        )
         .orderBy(function(event) {
-          return event.next.total_minute;
-        })
+          return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
+        }.bind(this), this.sorting.split('-')[3])
         .value();
     }
   },
@@ -190,8 +210,7 @@ export default {
                 event.next.total_minute--;
               } else {
                 event.next = this.timeTilNext(event);
-                if (event.has_states)
-                  this.currentlyHappening(event);
+                if (event.has_states) this.currentlyHappening(event);
                 if (!event.status.active) {
                   event.status.active = true;
                   event.status.cooldown = event.duration * 60;
