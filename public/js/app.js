@@ -30451,7 +30451,7 @@ exports = module.exports = __webpack_require__(42)(undefined);
 
 
 // module
-exports.push([module.i, "\n.balthazar {\r\n  background-image: url(/imgs/balthazar.jpg);\r\n  background-position: 50% 22%;\r\n  height: 120px;\n}\n.popup-notification {\r\n  position: fixed;\r\n  right: 10px;\r\n  bottom: 10px;\n}\n.fade-enter-active,\r\n.fade-leave-active {\r\n  -webkit-transition: opacity 0.25s ease-out;\r\n  transition: opacity 0.25s ease-out;\n}\n.fade-enter,\r\n.fade-leave-to {\r\n  opacity: 0;\n}\r\n", ""]);
+exports.push([module.i, "\n.balthazar {\r\n  background-image: url(/imgs/balthazar.jpg);\r\n  background-position: 50% 22%;\r\n  height: 120px;\n}\n.popup-notification {\r\n  position: fixed;\r\n  right: 10px;\r\n  bottom: 10px;\n}\n.fade-enter-active,\r\n.fade-leave-active {\r\n  -webkit-transition: opacity 0.25s ease-out;\r\n  transition: opacity 0.25s ease-out;\n}\n.fade-enter,\r\n.fade-leave-to {\r\n  opacity: 0;\n}\n.is-tab {\r\n  -webkit-user-select: none;\r\n     -moz-user-select: none;\r\n      -ms-user-select: none;\r\n          user-select: none;\n}\r\n", ""]);
 
 // exports
 
@@ -30949,8 +30949,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         if (this.category == "all") return event.next.total_minute > 15 && !event.status.active;
         return event.next.total_minute > 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
-      }.bind(this), this.sorting.split('-')[3]).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     }
   },
   mounted: function mounted() {

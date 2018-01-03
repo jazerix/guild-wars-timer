@@ -171,9 +171,14 @@ export default {
             );
           }.bind(this)
         )
-        .orderBy(function(event) {
-          return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
-        }.bind(this), this.sorting.split('-')[3])
+        .orderBy(
+          function(event) {
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.next.total_minute
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3]
+        )
         .value();
     }
   },
@@ -410,5 +415,9 @@ export default {
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
+}
+
+.is-tab {
+  user-select: none;
 }
 </style>
