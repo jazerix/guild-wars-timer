@@ -101,6 +101,16 @@
         </div>
       </div>
     </section>
+    <footer class="footer">
+      <div class="container">
+        <div class="content has-text-centered">
+          <p>
+            <strong>Live GW2</strong> by <a target="_blank" href="https://www.linkedin.com/in/nielsfaurskov/">Niels Faurskov</a>. The source code can be found 
+            <a target="_blank" href="https://github.com/jazerix/guild-wars-timer">here</a>. Contact me at <a href="mailto:niels.faurskov@gmail.com">niels.faurskov@gmail.com</a> or ingame <b>jazerix.7842</b>.
+          </p>
+        </div>
+      </div>
+    </footer>
     <transition name="fade">
       <div v-if="copied" class="notification is-primary popup-notification">
         Successfully copied waypoint to clipboard.
@@ -135,12 +145,14 @@ export default {
             return event.status.active == true && this.category == event.type;
           }.bind(this)
         )
-        .orderBy(function(event) {
+        .orderBy(
+          function(event) {
             return this.sorting.split("-")[2] == "numeric"
               ? event.status.cooldown
               : event.name;
           }.bind(this),
-          this.sorting.split("-")[3])
+          this.sorting.split("-")[3]
+        )
         .value();
     },
     soon: function() {

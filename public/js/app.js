@@ -30909,6 +30909,16 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -31411,6 +31421,8 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
+      _vm._m(4),
+      _vm._v(" "),
       _c("transition", { attrs: { name: "fade" } }, [
         _vm.copied
           ? _c(
@@ -31510,6 +31522,49 @@ var staticRenderFns = [
                 "\n                    Day ends in 20 minutes\n                  "
               )
             ])
+          ])
+        ])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("footer", { staticClass: "footer" }, [
+      _c("div", { staticClass: "container" }, [
+        _c("div", { staticClass: "content has-text-centered" }, [
+          _c("p", [
+            _c("strong", [_vm._v("Live GW2")]),
+            _vm._v(" by "),
+            _c(
+              "a",
+              {
+                attrs: {
+                  target: "_blank",
+                  href: "https://www.linkedin.com/in/nielsfaurskov/"
+                }
+              },
+              [_vm._v("Niels Faurskov")]
+            ),
+            _vm._v(". The source code can be found \n          "),
+            _c(
+              "a",
+              {
+                attrs: {
+                  target: "_blank",
+                  href: "https://github.com/jazerix/guild-wars-timer"
+                }
+              },
+              [_vm._v("here")]
+            ),
+            _vm._v(". Contact me at "),
+            _c("a", { attrs: { href: "mailto:niels.faurskov@gmail.com" } }, [
+              _vm._v("niels.faurskov@gmail.com")
+            ]),
+            _vm._v(" or ingame "),
+            _c("b", [_vm._v("jazerix.7842")]),
+            _vm._v(".\n        ")
           ])
         ])
       ])
