@@ -29,15 +29,22 @@ class Event extends Model
     }
 
     public function getStatusAttribute()
-    {   
-        if ($this->has_states) 
-        {
+    {
+        if ($this->has_states) {
             $event = $this->currentState((int)date('H'), (int)date('i'));
+            
+            $current = new \DateTime();
+            
+
             $endTime = new \DateTime("{$event->time_at}");
             $endTime->add(new \DateInterval("PT{$event->duration}M"));
+
+            if ($current->format('d') != $endTime->format('d'))
+                $current->add(new \DateInterval("PT24H"));
+
             return [
                 'active' => true,
-                'cooldown' => $endTime->getTimeStamp() - time(),
+                'cooldown' => $endTime->getTimeStamp() - $current->getTimeStamp(),
                 'name' => $event->state
             ];
         }
@@ -51,9 +58,10 @@ class Event extends Model
         $currentTimeEnd->add(new \DateInterval("PT{$this->duration}M"));
         $currentTimeEnd = $currentTimeEnd->getTimestamp();
 
-        if (time() >= $currentTimeStart && time() <= $currentTimeEnd)
+        if (time() >= $currentTimeStart && time() <= $currentTimeEnd) {
             $active = true;
-    
+        }
+
         $status = [
             'active' => $active,
             'cooldown' => $active ? floor($currentTimeEnd - time()) : null,
@@ -62,6 +70,7 @@ class Event extends Model
 
         return $status;
     }
+
     private function timeTilNext()
     {
         $hour = (int)date('H');
@@ -83,39 +92,37 @@ class Event extends Model
     private function currentState($hour, $minute)
     {
         $i = null;
-        foreach($this->times as $index => $time)
-        {
+        foreach ($this->times as $index => $time) {
             $eventTime = explode(':', $time->time_at);
             $tHour = (int)$eventTime[0];
             $tMinute = (int)$eventTime[1];
-            if ($hour < $tHour || ($hour == $tHour && $minute < $tMinute))
-            {
-                $i = $index; 
+            if ($hour < $tHour || ($hour == $tHour && $minute < $tMinute)) {
+                $i = $index;
                 break;
             }
         }
-        if ($i == 0)
+        if ($i == 0 || is_null($i)) {
             $i = $this->times->count();
-        return $this->times[$i-1];
+        }
+        return $this->times[$i - 1];
     }
 
     private function findEvent($hour, $minute)
     {
         $event = null;
-        $index = null;
-        foreach($this->times as $i => $time)
-        {
+        foreach ($this->times as $i => $time) {
             $eventTime = explode(':', $time->time_at);
             $tHour = (int)$eventTime[0];
             $tMinute = (int)$eventTime[1];
 
-            if ($hour < $tHour || ($hour == $tHour && $minute < $tMinute))
-            {
+            if ($hour < $tHour || ($hour == $tHour && $minute < $tMinute)) {
                 $event = [
                     'hour' => $tHour,
                     'minute' => $tMinute,
                     'duration' => $time->duration,
-                    'state' => $time->state
+                    'state' => $time->state,
+                    'location' => $time->location,
+                    'waypoint' => $time->waypoint
                 ];
                 break;
             }
@@ -128,11 +135,12 @@ class Event extends Model
             return [
                 'hour' => $tHour,
                 'minute' => $tMinute,
-                'duration' => $time->duration,
-                'state' => $time->state
+                'duration' => $this->times[0]->duration,
+                'state' => $this->times[0]->state,
+                'location' => $this->times[0]->location,
+                'waypoint' => $this->times[0]->waypoint
             ];
         }
         return $event;
     }
-
 }

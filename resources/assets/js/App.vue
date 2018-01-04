@@ -13,7 +13,6 @@
           </div>
         </div>
         <div ref="navbar" class="navbar-menu">
-
           <div class="navbar-end">
             <div class="navbar-item">
               <a @click="switchSort()" class="button is-link is-flex-touch">
@@ -58,6 +57,9 @@
                 </div>
               </div>
             </div>
+            <a class="navbar-item">
+              API
+            </a>
           </div>
         </div>
       </div>
@@ -101,6 +103,19 @@
         </div>
       </div>
     </section>
+    <footer class="footer">
+      <div class="container">
+        <div class="content has-text-centered">
+          <p>
+            <strong>Live GW2</strong> by
+            <a target="_blank" href="https://www.linkedin.com/in/nielsfaurskov/">Niels Faurskov</a>. The source code can be found
+            <a target="_blank" href="https://github.com/jazerix/guild-wars-timer">here</a>. Contact me at
+            <a href="mailto:niels.faurskov@gmail.com">niels.faurskov@gmail.com</a> or ingame
+            <b>jazerix.7842</b>.
+          </p>
+        </div>
+      </div>
+    </footer>
     <transition name="fade">
       <div v-if="copied" class="notification is-primary popup-notification">
         Successfully copied waypoint to clipboard.
@@ -135,9 +150,14 @@ export default {
             return event.status.active == true && this.category == event.type;
           }.bind(this)
         )
-        .orderBy(function(event) {
-          return event.status.cooldown;
-        })
+        .orderBy(
+          function(event) {
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.status.cooldown
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3]
+        )
         .value();
     },
     soon: function() {
@@ -153,9 +173,14 @@ export default {
             );
           }.bind(this)
         )
-        .orderBy(function(event) {
-          return event.next.total_minute;
-        })
+        .orderBy(
+          function(event) {
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.next.total_minute
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3]
+        )
         .value();
     },
     later: function() {
@@ -171,9 +196,14 @@ export default {
             );
           }.bind(this)
         )
-        .orderBy(function(event) {
-          return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
-        }.bind(this), this.sorting.split('-')[3])
+        .orderBy(
+          function(event) {
+            return this.sorting.split("-")[2] == "numeric"
+              ? event.next.total_minute
+              : event.name;
+          }.bind(this),
+          this.sorting.split("-")[3]
+        )
         .value();
     }
   },
@@ -198,6 +228,13 @@ export default {
                 if (!event.has_states) {
                   event.status.active = false;
                   event.status.cooldown = null;
+                  if (event.next.at.location != null) {
+                    this.setLocation(
+                      event,
+                      event.next.at.location,
+                      event.next.at.location
+                    );
+                  }
                 }
               }
             }
@@ -281,7 +318,7 @@ export default {
           return;
         }
       });
-      if (i == 0) i = event.times.length;
+      if (i == 0 || i == null) i = event.times.length;
       return event.times[i - 1];
     },
     findNextEvent(event, hour, minute) {
@@ -297,7 +334,9 @@ export default {
             hour: tHour,
             minute: tMinute,
             duration: time.duration,
-            state: time.state
+            state: time.state,
+            location: time.location,
+            waypoint: time.waypoint
           };
           return;
         }
@@ -311,10 +350,11 @@ export default {
           hour: tHour,
           minute: tMinute,
           duration: event.times[0].duration,
-          state: event.times[0].state
+          state: event.times[0].state,
+          location: time.location,
+          waypoint: time.waypoint
         };
       }
-
       return next;
     },
     timeTilNext(event) {
@@ -336,7 +376,9 @@ export default {
           hour: next.hour,
           minute: next.minute,
           duration: next.duration,
-          state: next.state
+          state: next.state,
+          location: next.location,
+          waypoint: next.waypoint
         }
       };
     },
@@ -354,8 +396,11 @@ export default {
         endTime.setUTCHours(currentTime[0], currentTime[1], 0);
         endTime = new Date(endTime.getTime() + current.duration * 60000);
 
+        if (time.getDate() != endTime.getDate())
+          time.setTime(time.getTime() + 86400000);
+
         event.status.name = current.state;
-        event.status.active = true;
+        event.name = event.status.name;
         event.status.cooldown = Math.floor(
           (endTime.getTime() - time.getTime()) / 1000
         );
@@ -384,6 +429,13 @@ export default {
         event.status.active = false;
         event.status.cooldown = null;
       }
+      if (current.location != null) {
+        this.setLocation(event, current.location, current.waypoint);
+      }
+    },
+    setLocation(event, location, waypoint) {
+      event.location = location;
+      event.waypoint_link = waypoint;
     }
   }
 };
@@ -410,5 +462,12 @@ export default {
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
+}
+
+.is-tab {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 </style>

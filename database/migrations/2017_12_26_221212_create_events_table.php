@@ -19,8 +19,8 @@ class CreateEventsTable extends Migration
             $table->boolean('has_states')->default(0);
             $table->integer('duration')->nullable();
             $table->string('name');
-            $table->string('location');
-            $table->string('waypoint_link');
+            $table->string('location')->nullable();
+            $table->string('waypoint_link')->nullable();
             $table->string('wiki_link');
             $table->string('class');
             $table->timestamps();

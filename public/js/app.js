@@ -30451,7 +30451,7 @@ exports = module.exports = __webpack_require__(42)(undefined);
 
 
 // module
-exports.push([module.i, "\n.balthazar {\r\n  background-image: url(/imgs/balthazar.jpg);\r\n  background-position: 50% 22%;\r\n  height: 120px;\n}\n.popup-notification {\r\n  position: fixed;\r\n  right: 10px;\r\n  bottom: 10px;\n}\n.fade-enter-active,\r\n.fade-leave-active {\r\n  -webkit-transition: opacity 0.25s ease-out;\r\n  transition: opacity 0.25s ease-out;\n}\n.fade-enter,\r\n.fade-leave-to {\r\n  opacity: 0;\n}\r\n", ""]);
+exports.push([module.i, "\n.balthazar {\r\n  background-image: url(/imgs/balthazar.jpg);\r\n  background-position: 50% 22%;\r\n  height: 120px;\n}\n.popup-notification {\r\n  position: fixed;\r\n  right: 10px;\r\n  bottom: 10px;\n}\n.fade-enter-active,\r\n.fade-leave-active {\r\n  -webkit-transition: opacity 0.25s ease-out;\r\n  transition: opacity 0.25s ease-out;\n}\n.fade-enter,\r\n.fade-leave-to {\r\n  opacity: 0;\n}\n.is-tab {\r\n  -moz-user-select: none;\r\n  -webkit-user-select: none;\r\n  -ms-user-select: none;\r\n  user-select: none;\n}\r\n", ""]);
 
 // exports
 
@@ -30909,6 +30909,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -30933,24 +30948,24 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         if (this.category == "all") return event.status.active == true;
         return event.status.active == true && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return event.status.cooldown;
-      }).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.status.cooldown : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     },
     soon: function soon() {
       return _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.next.total_minute <= 15 && !event.status.active;
         return event.next.total_minute <= 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return event.next.total_minute;
-      }).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     },
     later: function later() {
       return _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.next.total_minute > 15 && !event.status.active;
         return event.next.total_minute > 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
-        return this.sorting.split('-')[2] == "numeric" ? event.next.total_minute : event.name;
-      }.bind(this), this.sorting.split('-')[3]).value();
+        return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
+      }.bind(this), this.sorting.split("-")[3]).value();
     }
   },
   mounted: function mounted() {
@@ -30972,6 +30987,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             if (!event.has_states) {
               event.status.active = false;
               event.status.cooldown = null;
+              if (event.next.at.location != null) {
+                this.setLocation(event, event.next.at.location, event.next.at.location);
+              }
             }
           }
         }
@@ -31045,7 +31063,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           return;
         }
       });
-      if (i == 0) i = event.times.length;
+      if (i == 0 || i == null) i = event.times.length;
       return event.times[i - 1];
     },
     findNextEvent: function findNextEvent(event, hour, minute) {
@@ -31061,7 +31079,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             hour: tHour,
             minute: tMinute,
             duration: time.duration,
-            state: time.state
+            state: time.state,
+            location: time.location,
+            waypoint: time.waypoint
           };
           return;
         }
@@ -31075,10 +31095,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           hour: tHour,
           minute: tMinute,
           duration: event.times[0].duration,
-          state: event.times[0].state
+          state: event.times[0].state,
+          location: time.location,
+          waypoint: time.waypoint
         };
       }
-
       return next;
     },
     timeTilNext: function timeTilNext(event) {
@@ -31100,7 +31121,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           hour: next.hour,
           minute: next.minute,
           duration: next.duration,
-          state: next.state
+          state: next.state,
+          location: next.location,
+          waypoint: next.waypoint
         }
       };
     },
@@ -31118,8 +31141,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         endTime.setUTCHours(_currentTime[0], _currentTime[1], 0);
         endTime = new Date(endTime.getTime() + _current.duration * 60000);
 
+        if (time.getDate() != endTime.getDate()) time.setTime(time.getTime() + 86400000);
+
         event.status.name = _current.state;
-        event.status.active = true;
+        event.name = event.status.name;
         event.status.cooldown = Math.floor((endTime.getTime() - time.getTime()) / 1000);
         return;
       }
@@ -31139,6 +31164,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         event.status.active = false;
         event.status.cooldown = null;
       }
+      if (current.location != null) {
+        this.setLocation(event, current.location, current.waypoint);
+      }
+    },
+    setLocation: function setLocation(event, location, waypoint) {
+      event.location = location;
+      event.waypoint_link = waypoint;
     }
   }
 });
@@ -31199,7 +31231,11 @@ var render = function() {
               _vm._v(" "),
               _vm._m(2),
               _vm._v(" "),
-              _vm._m(3)
+              _vm._m(3),
+              _vm._v(" "),
+              _c("a", { staticClass: "navbar-item" }, [
+                _vm._v("\n            API\n          ")
+              ])
             ])
           ])
         ])
@@ -31410,6 +31446,8 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
+      _vm._m(4),
+      _vm._v(" "),
       _c("transition", { attrs: { name: "fade" } }, [
         _vm.copied
           ? _c(
@@ -31509,6 +31547,49 @@ var staticRenderFns = [
                 "\n                    Day ends in 20 minutes\n                  "
               )
             ])
+          ])
+        ])
+      ])
+    ])
+  },
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("footer", { staticClass: "footer" }, [
+      _c("div", { staticClass: "container" }, [
+        _c("div", { staticClass: "content has-text-centered" }, [
+          _c("p", [
+            _c("strong", [_vm._v("Live GW2")]),
+            _vm._v(" by\n          "),
+            _c(
+              "a",
+              {
+                attrs: {
+                  target: "_blank",
+                  href: "https://www.linkedin.com/in/nielsfaurskov/"
+                }
+              },
+              [_vm._v("Niels Faurskov")]
+            ),
+            _vm._v(". The source code can be found\n          "),
+            _c(
+              "a",
+              {
+                attrs: {
+                  target: "_blank",
+                  href: "https://github.com/jazerix/guild-wars-timer"
+                }
+              },
+              [_vm._v("here")]
+            ),
+            _vm._v(". Contact me at\n          "),
+            _c("a", { attrs: { href: "mailto:niels.faurskov@gmail.com" } }, [
+              _vm._v("niels.faurskov@gmail.com")
+            ]),
+            _vm._v(" or ingame\n          "),
+            _c("b", [_vm._v("jazerix.7842")]),
+            _vm._v(".\n        ")
           ])
         ])
       ])
@@ -31714,7 +31795,7 @@ var render = function() {
       _c("div", { staticClass: "boss" }, [
         _c("span", { staticClass: "event" }, [
           _c("a", { attrs: { target: "_blank", href: _vm.wiki } }, [
-            _vm._v(_vm._s(_vm.states ? _vm.status.name : _vm.name))
+            _vm._v(_vm._s(_vm.name))
           ])
         ]),
         _vm._v(" "),
