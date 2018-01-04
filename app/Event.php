@@ -32,11 +32,19 @@ class Event extends Model
     {
         if ($this->has_states) {
             $event = $this->currentState((int)date('H'), (int)date('i'));
+            
+            $current = new \DateTime();
+            
+
             $endTime = new \DateTime("{$event->time_at}");
             $endTime->add(new \DateInterval("PT{$event->duration}M"));
+
+            if ($current->format('d') != $endTime->format('d'))
+                $current->add(new \DateInterval("PT24H"));
+
             return [
                 'active' => true,
-                'cooldown' => $endTime->getTimeStamp() - time(),
+                'cooldown' => $endTime->getTimeStamp() - $current->getTimeStamp(),
                 'name' => $event->state
             ];
         }
@@ -93,7 +101,7 @@ class Event extends Model
                 break;
             }
         }
-        if ($i == 0) {
+        if ($i == 0 || is_null($i)) {
             $i = $this->times->count();
         }
         return $this->times[$i - 1];
@@ -102,7 +110,6 @@ class Event extends Model
     private function findEvent($hour, $minute)
     {
         $event = null;
-        $index = null;
         foreach ($this->times as $i => $time) {
             $eventTime = explode(':', $time->time_at);
             $tHour = (int)$eventTime[0];
@@ -113,7 +120,9 @@ class Event extends Model
                     'hour' => $tHour,
                     'minute' => $tMinute,
                     'duration' => $time->duration,
-                    'state' => $time->state
+                    'state' => $time->state,
+                    'location' => $time->location,
+                    'waypoint' => $time->waypoint
                 ];
                 break;
             }
@@ -126,8 +135,10 @@ class Event extends Model
             return [
                 'hour' => $tHour,
                 'minute' => $tMinute,
-                'duration' => $time->duration,
-                'state' => $time->state
+                'duration' => $this->times[0]->duration,
+                'state' => $this->times[0]->state,
+                'location' => $this->times[0]->location,
+                'waypoint' => $this->times[0]->waypoint
             ];
         }
         return $event;

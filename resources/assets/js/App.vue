@@ -107,8 +107,11 @@
       <div class="container">
         <div class="content has-text-centered">
           <p>
-            <strong>Live GW2</strong> by <a target="_blank" href="https://www.linkedin.com/in/nielsfaurskov/">Niels Faurskov</a>. The source code can be found 
-            <a target="_blank" href="https://github.com/jazerix/guild-wars-timer">here</a>. Contact me at <a href="mailto:niels.faurskov@gmail.com">niels.faurskov@gmail.com</a> or ingame <b>jazerix.7842</b>.
+            <strong>Live GW2</strong> by
+            <a target="_blank" href="https://www.linkedin.com/in/nielsfaurskov/">Niels Faurskov</a>. The source code can be found
+            <a target="_blank" href="https://github.com/jazerix/guild-wars-timer">here</a>. Contact me at
+            <a href="mailto:niels.faurskov@gmail.com">niels.faurskov@gmail.com</a> or ingame
+            <b>jazerix.7842</b>.
           </p>
         </div>
       </div>
@@ -225,6 +228,13 @@ export default {
                 if (!event.has_states) {
                   event.status.active = false;
                   event.status.cooldown = null;
+                  if (event.next.at.location != null) {
+                    this.setLocation(
+                      event,
+                      event.next.at.location,
+                      event.next.at.location
+                    );
+                  }
                 }
               }
             }
@@ -308,7 +318,7 @@ export default {
           return;
         }
       });
-      if (i == 0) i = event.times.length;
+      if (i == 0 || i == null) i = event.times.length;
       return event.times[i - 1];
     },
     findNextEvent(event, hour, minute) {
@@ -324,7 +334,9 @@ export default {
             hour: tHour,
             minute: tMinute,
             duration: time.duration,
-            state: time.state
+            state: time.state,
+            location: time.location,
+            waypoint: time.waypoint
           };
           return;
         }
@@ -338,10 +350,11 @@ export default {
           hour: tHour,
           minute: tMinute,
           duration: event.times[0].duration,
-          state: event.times[0].state
+          state: event.times[0].state,
+          location: time.location,
+          waypoint: time.waypoint
         };
       }
-
       return next;
     },
     timeTilNext(event) {
@@ -363,7 +376,9 @@ export default {
           hour: next.hour,
           minute: next.minute,
           duration: next.duration,
-          state: next.state
+          state: next.state,
+          location: next.location,
+          waypoint: next.waypoint
         }
       };
     },
@@ -381,9 +396,11 @@ export default {
         endTime.setUTCHours(currentTime[0], currentTime[1], 0);
         endTime = new Date(endTime.getTime() + current.duration * 60000);
 
+        if (time.getDate() != endTime.getDate())
+          time.setTime(time.getTime() + 86400000);
+
         event.status.name = current.state;
         event.name = event.status.name;
-        event.status.active = true;
         event.status.cooldown = Math.floor(
           (endTime.getTime() - time.getTime()) / 1000
         );
@@ -412,6 +429,13 @@ export default {
         event.status.active = false;
         event.status.cooldown = null;
       }
+      if (current.location != null) {
+        this.setLocation(event, current.location, current.waypoint);
+      }
+    },
+    setLocation(event, location, waypoint) {
+      event.location = location;
+      event.waypoint_link = waypoint;
     }
   }
 };
@@ -441,6 +465,9 @@ export default {
 }
 
 .is-tab {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   user-select: none;
 }
 </style>
