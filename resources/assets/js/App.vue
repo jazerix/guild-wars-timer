@@ -69,6 +69,9 @@
     <nav class="navbar has-shadow">
       <div class="container">
         <div class="navbar-tabs">
+          <a v-if="favorites.length > 0" @click="category = 'favorites'" class="navbar-item is-tab" :class="{ 'is-active': category == 'favorites' }">
+            Favorites
+          </a>
           <a @click="category = 'all'" class="navbar-item is-tab" :class="{ 'is-active': category == 'all' }">
             All
           </a>
@@ -91,7 +94,7 @@
       <div class="container">
         <h1 v-show="now.length > 0" class="title">Happening now...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @favorite="toggleFavorite(event.id)" @copied="copyNotification()" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 v-show="soon.length > 0" class="title">Soon...</h1>
         <div class="columns is-multiline">
@@ -138,7 +141,8 @@ export default {
       },
       copied: false,
       sorting: "fa-sort-numeric-asc",
-      category: "all"
+      category: "all",
+      favorites: [],
     };
   },
   computed: {
@@ -232,7 +236,7 @@ export default {
                     this.setLocation(
                       event,
                       event.next.at.location,
-                      event.next.at.location
+                      event.next.at.waypoint
                     );
                   }
                 }
@@ -261,6 +265,13 @@ export default {
     );
   },
   methods: {
+    toggleFavorite(id) {
+      if (this.favorites.includes(id)) {
+        this.favorites = this.favorites.filter(e => e !== id);
+      } else {
+        this.favorites.push(id);
+      }
+    },
     switchSort() {
       switch (this.sorting) {
         case "fa-sort-numeric-asc":

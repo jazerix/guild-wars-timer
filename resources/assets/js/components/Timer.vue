@@ -29,7 +29,7 @@
               </a>
             </li>
             <li :class="{ 'favorite': favorite }">
-              <a @click="favorite = !favorite">
+              <a @click="toggleFavorite()">
                 <i v-if="favorite" class="fa fa-star" aria-hidden="true"></i>
                 <i v-if="!favorite" class="fa fa-star-o" aria-hidden="true"></i>
               </a>
@@ -92,6 +92,10 @@ export default {
     }
   },
   methods: {
+    toggleFavorite() {
+      this.favorite = !this.favorite;
+      this.$emit("favorite");
+    },
     copyToClipboard() {
       copy(this.waypoint);
       this.$emit("copied");

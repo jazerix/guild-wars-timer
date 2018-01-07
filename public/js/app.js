@@ -30924,6 +30924,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -30938,7 +30941,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       },
       copied: false,
       sorting: "fa-sort-numeric-asc",
-      category: "all"
+      category: "all",
+      favorites: []
     };
   },
 
@@ -30988,7 +30992,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
               event.status.active = false;
               event.status.cooldown = null;
               if (event.next.at.location != null) {
-                this.setLocation(event, event.next.at.location, event.next.at.location);
+                this.setLocation(event, event.next.at.location, event.next.at.waypoint);
               }
             }
           }
@@ -31013,6 +31017,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     }.bind(this), 1000);
   },
   methods: {
+    toggleFavorite: function toggleFavorite(id) {
+      if (this.favorites.includes(id)) {
+        this.favorites = this.favorites.filter(function (e) {
+          return e !== id;
+        });
+      } else {
+        this.favorites.push(id);
+      }
+    },
     switchSort: function switchSort() {
       switch (this.sorting) {
         case "fa-sort-numeric-asc":
@@ -31246,6 +31259,22 @@ var render = function() {
       _c("nav", { staticClass: "navbar has-shadow" }, [
         _c("div", { staticClass: "container" }, [
           _c("div", { staticClass: "navbar-tabs" }, [
+            _vm.favorites.length > 0
+              ? _c(
+                  "a",
+                  {
+                    staticClass: "navbar-item is-tab",
+                    class: { "is-active": _vm.category == "favorites" },
+                    on: {
+                      click: function($event) {
+                        _vm.category = "favorites"
+                      }
+                    }
+                  },
+                  [_vm._v("\n          Favorites\n        ")]
+                )
+              : _vm._e(),
+            _vm._v(" "),
             _c(
               "a",
               {
@@ -31354,6 +31383,9 @@ var render = function() {
                   next: event.next
                 },
                 on: {
+                  favorite: function($event) {
+                    _vm.toggleFavorite(event.id)
+                  },
                   copied: function($event) {
                     _vm.copyNotification()
                   }
@@ -31753,6 +31785,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     }
   },
   methods: {
+    toggleFavorite: function toggleFavorite() {
+      this.favorite = !this.favorite;
+      this.$emit("favorite");
+    },
     copyToClipboard: function copyToClipboard() {
       copy(this.waypoint);
       this.$emit("copied");
@@ -31856,7 +31892,7 @@ var render = function() {
                 {
                   on: {
                     click: function($event) {
-                      _vm.favorite = !_vm.favorite
+                      _vm.toggleFavorite()
                     }
                   }
                 },
