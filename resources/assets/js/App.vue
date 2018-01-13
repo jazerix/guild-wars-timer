@@ -37,21 +37,17 @@
             </div>
             <div class="navbar-item is-hoverable">
               <div class="field is-grouped" style="margin:0px;">
+                <p class="control" v-text="lunar.day ? 'Day' : 'Night'"></p>
                 <p class="control">
-                  Day
+                  <progress class="progress is-small" style="width:100px;position: relative;top: 50%;transform: translateY(-50%);" :value="lunar.percentage" max="100">{{ lunar.percentage }}%</progress>
                 </p>
-                <p class="control">
-                  <progress class="progress is-small" style="width:100px;position: relative;top: 50%;transform: translateY(-50%);" value="15" max="100">15%</progress>
-                </p>
-                <p class="control">
-                  Night
-                </p>
+                <p class="control" v-text="lunar.day ? 'Night' : 'Day'"></p>
               </div>
               <div class="navbar-dropdown is-boxed">
                 <div class="navbar-item">
                   <div>
                     <small>
-                      Day ends in 20 minutes
+                      {{ lunar.day ? 'Day' : 'Night' }} ends in <b>{{ lunar.left }}</b> minutes
                     </small>
                   </div>
                 </div>
@@ -69,6 +65,9 @@
     <nav class="navbar has-shadow">
       <div class="container">
         <div class="navbar-tabs">
+          <a v-if="favoriteCount > 0" @click="category = 'favorites'" class="navbar-item is-tab" :class="{ 'is-active': category == 'favorites' }">
+            Favorites
+          </a>
           <a @click="category = 'all'" class="navbar-item is-tab" :class="{ 'is-active': category == 'all' }">
             All
           </a>
@@ -91,15 +90,15 @@
       <div class="container">
         <h1 v-show="now.length > 0" class="title">Happening now...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 v-show="soon.length > 0" class="title">Soon...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in soon" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in soon" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 v-show="later.length > 0" class="title">Later...</h1>
         <div class="columns is-multiline">
-          <timer @copied="copyNotification()" v-for="event in later" :key="event.id" :states="event.has_states" :tag="event.class" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in later" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
       </div>
     </section>
@@ -117,7 +116,7 @@
       </div>
     </footer>
     <transition name="fade">
-      <div v-if="copied" class="notification is-primary popup-notification">
+      <div v-if="notification.display" class="notification is-primary popup-notification">
         Successfully copied waypoint to clipboard.
       </div>
     </transition>
@@ -136,17 +135,29 @@ export default {
         second: new Date().getUTCSeconds(),
         timestamp: new Date().getTime()
       },
-      copied: false,
+      notification: {
+        display: false,
+        text: ""
+      },
+      lunar: {
+        day: true,
+        percentage: 0,
+        left: 0
+      },
       sorting: "fa-sort-numeric-asc",
-      category: "all"
+      category: "all",
+      favoriteCount: 0
     };
   },
   computed: {
     now: function() {
-      return _.chain(this.events)
+      let results = _.chain(this.events)
         .filter(
           function(event) {
             if (this.category == "all") return event.status.active == true;
+            if (this.category == "favorites") {
+              return event.status.active == true && event.favorite == true;
+            }
             return event.status.active == true && this.category == event.type;
           }.bind(this)
         )
@@ -159,6 +170,7 @@ export default {
           this.sorting.split("-")[3]
         )
         .value();
+      return results;
     },
     soon: function() {
       return _.chain(this.events)
@@ -166,6 +178,13 @@ export default {
           function(event) {
             if (this.category == "all")
               return event.next.total_minute <= 15 && !event.status.active;
+            if (this.category == "favorites") {
+              return (
+                event.next.total_minute <= 15 &&
+                !event.status.active &&
+                event.favorite == true
+              );
+            }
             return (
               event.next.total_minute <= 15 &&
               !event.status.active &&
@@ -189,6 +208,13 @@ export default {
           function(event) {
             if (this.category == "all")
               return event.next.total_minute > 15 && !event.status.active;
+            if (this.category == "favorites") {
+              return (
+                event.next.total_minute > 15 &&
+                !event.status.active &&
+                event.favorite == true
+              );
+            }
             return (
               event.next.total_minute > 15 &&
               !event.status.active &&
@@ -232,7 +258,7 @@ export default {
                     this.setLocation(
                       event,
                       event.next.at.location,
-                      event.next.at.location
+                      event.next.at.waypoint
                     );
                   }
                 }
@@ -253,14 +279,29 @@ export default {
                   event.status.cooldown = event.duration * 60;
                 }
               }
+              this.getLunarState();
             }
           }.bind(this)
         );
       }.bind(this),
       1000
     );
+    this.getLunarState()
   },
   methods: {
+    toggleFavorite(event, favored) {
+      let favorites = localStorage.getItem("favorites");
+      if (favorites == null) favorites = [];
+      else favorites = JSON.parse(favorites);
+      if (favored) favorites.push(event.id);
+      else favorites.splice(favorites.indexOf(event.id), 1);
+
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+
+      if (favored) this.favoriteCount++;
+      else this.favoriteCount--;
+      event.favorite = favored;
+    },
     switchSort() {
       switch (this.sorting) {
         case "fa-sort-numeric-asc":
@@ -277,11 +318,12 @@ export default {
           break;
       }
     },
-    copyNotification() {
-      this.copied = true;
+    notify(text) {
+      this.notification.text = text;
+      this.notification.display = true;
       setTimeout(
         function() {
-          this.copied = false;
+          this.notification.display = false;
         }.bind(this),
         3000
       );
@@ -291,8 +333,15 @@ export default {
       this.$refs.navbar.classList.toggle("is-active");
     },
     all() {
-      axios.get("/events").then(
+      axios.get("/api/events").then(
         function(response) {
+          let favorites = localStorage.getItem("favorites");
+          if (favorites != null) favorites = JSON.parse(favorites);
+          else favorites = [];
+          response.data.forEach(function(event) {
+            event.favorite = favorites.includes(event.id);
+          });
+          this.favoriteCount = favorites.length;
           this.events = response.data;
           this.startUp();
         }.bind(this)
@@ -351,8 +400,8 @@ export default {
           minute: tMinute,
           duration: event.times[0].duration,
           state: event.times[0].state,
-          location: time.location,
-          waypoint: time.waypoint
+          location: event.times[0].location,
+          waypoint: event.times[0].waypoint
         };
       }
       return next;
@@ -399,11 +448,23 @@ export default {
         if (time.getDate() != endTime.getDate())
           time.setTime(time.getTime() + 86400000);
 
-        event.status.name = current.state;
-        event.name = event.status.name;
-        event.status.cooldown = Math.floor(
-          (endTime.getTime() - time.getTime()) / 1000
-        );
+        if (endTime.getTime() <= time.getTime()) {
+          event.status.name = "Inactive";
+          event.name = event.status.name;
+          event.status.cooldown = null;
+          event.status.active = false;
+        } else {
+          event.status.name = current.state;
+          event.name = event.status.name;
+          event.status.active = true;
+          event.status.cooldown = Math.floor(
+            (endTime.getTime() - time.getTime()) / 1000
+          );
+        }
+
+        if (event.waypoint_link == null)
+          this.setLocation(event, event.location, current.waypoint);
+
         return;
       }
       var dt = new Date();
@@ -436,6 +497,40 @@ export default {
     setLocation(event, location, waypoint) {
       event.location = location;
       event.waypoint_link = waypoint;
+    },
+    getLunarState() {
+      let odd = this.time.hour % 2 == 1;
+      let day = false;
+      let started = '';
+      let elapsed = '';
+
+      if ( ! odd && this.time.minute >= 30) {
+        day = true;
+        elapsed = this.time.minute - 30;
+        started = this.time.hour + ':30';
+      } else if ( ! odd && this.time.minute < 30) {
+        elapsed = this.time.minute + 15;
+        let hour = (this.time.hour + 23) % 24;
+        started = hour + ':45';
+      } else if (odd && this.time.minute < 45) {
+        day = true;
+        elapsed = 60 + this.time.minute - 30;
+        let hour = (this.time.hour + 23) % 24;
+        started = hour + ':30';
+      } else if (odd && this.time.minute >= 45) {
+        elapsed = this.time.minute - 45;
+        started = this.time.hour + ':45';
+      }
+      
+      let duration = (day ? 75 : 45);
+      this.lunar = {
+        day: day,
+        elapsed: elapsed,
+        left: duration - elapsed,
+        start: started,
+        duration: duration,
+        percentage: Math.round(elapsed / duration * 100)
+      };
     }
   }
 };

@@ -30923,7 +30923,6 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
-//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "app",
@@ -30936,24 +30935,40 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         second: new Date().getUTCSeconds(),
         timestamp: new Date().getTime()
       },
-      copied: false,
+      notification: {
+        display: false,
+        text: ""
+      },
+      lunar: {
+        day: true,
+        percentage: 0,
+        left: 0
+      },
       sorting: "fa-sort-numeric-asc",
-      category: "all"
+      category: "all",
+      favoriteCount: 0
     };
   },
 
   computed: {
     now: function now() {
-      return _.chain(this.events).filter(function (event) {
+      var results = _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.status.active == true;
+        if (this.category == "favorites") {
+          return event.status.active == true && event.favorite == true;
+        }
         return event.status.active == true && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
         return this.sorting.split("-")[2] == "numeric" ? event.status.cooldown : event.name;
       }.bind(this), this.sorting.split("-")[3]).value();
+      return results;
     },
     soon: function soon() {
       return _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.next.total_minute <= 15 && !event.status.active;
+        if (this.category == "favorites") {
+          return event.next.total_minute <= 15 && !event.status.active && event.favorite == true;
+        }
         return event.next.total_minute <= 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
         return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
@@ -30962,6 +30977,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     later: function later() {
       return _.chain(this.events).filter(function (event) {
         if (this.category == "all") return event.next.total_minute > 15 && !event.status.active;
+        if (this.category == "favorites") {
+          return event.next.total_minute > 15 && !event.status.active && event.favorite == true;
+        }
         return event.next.total_minute > 15 && !event.status.active && this.category == event.type;
       }.bind(this)).orderBy(function (event) {
         return this.sorting.split("-")[2] == "numeric" ? event.next.total_minute : event.name;
@@ -30988,7 +31006,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
               event.status.active = false;
               event.status.cooldown = null;
               if (event.next.at.location != null) {
-                this.setLocation(event, event.next.at.location, event.next.at.location);
+                this.setLocation(event, event.next.at.location, event.next.at.waypoint);
               }
             }
           }
@@ -31008,11 +31026,23 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
               event.status.cooldown = event.duration * 60;
             }
           }
+          this.getLunarState();
         }
       }.bind(this));
     }.bind(this), 1000);
+    this.getLunarState();
   },
   methods: {
+    toggleFavorite: function toggleFavorite(event, favored) {
+      var favorites = localStorage.getItem("favorites");
+      if (favorites == null) favorites = [];else favorites = JSON.parse(favorites);
+      if (favored) favorites.push(event.id);else favorites.splice(favorites.indexOf(event.id), 1);
+
+      localStorage.setItem("favorites", JSON.stringify(favorites));
+
+      if (favored) this.favoriteCount++;else this.favoriteCount--;
+      event.favorite = favored;
+    },
     switchSort: function switchSort() {
       switch (this.sorting) {
         case "fa-sort-numeric-asc":
@@ -31029,10 +31059,11 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           break;
       }
     },
-    copyNotification: function copyNotification() {
-      this.copied = true;
+    notify: function notify(text) {
+      this.notification.text = text;
+      this.notification.display = true;
       setTimeout(function () {
-        this.copied = false;
+        this.notification.display = false;
       }.bind(this), 3000);
     },
     toggleMenu: function toggleMenu() {
@@ -31040,7 +31071,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
       this.$refs.navbar.classList.toggle("is-active");
     },
     all: function all() {
-      axios.get("/events").then(function (response) {
+      axios.get("/api/events").then(function (response) {
+        var favorites = localStorage.getItem("favorites");
+        if (favorites != null) favorites = JSON.parse(favorites);else favorites = [];
+        response.data.forEach(function (event) {
+          event.favorite = favorites.includes(event.id);
+        });
+        this.favoriteCount = favorites.length;
         this.events = response.data;
         this.startUp();
       }.bind(this));
@@ -31096,8 +31133,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
           minute: tMinute,
           duration: event.times[0].duration,
           state: event.times[0].state,
-          location: time.location,
-          waypoint: time.waypoint
+          location: event.times[0].location,
+          waypoint: event.times[0].waypoint
         };
       }
       return next;
@@ -31143,9 +31180,20 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
         if (time.getDate() != endTime.getDate()) time.setTime(time.getTime() + 86400000);
 
-        event.status.name = _current.state;
-        event.name = event.status.name;
-        event.status.cooldown = Math.floor((endTime.getTime() - time.getTime()) / 1000);
+        if (endTime.getTime() <= time.getTime()) {
+          event.status.name = "Inactive";
+          event.name = event.status.name;
+          event.status.cooldown = null;
+          event.status.active = false;
+        } else {
+          event.status.name = _current.state;
+          event.name = event.status.name;
+          event.status.active = true;
+          event.status.cooldown = Math.floor((endTime.getTime() - time.getTime()) / 1000);
+        }
+
+        if (event.waypoint_link == null) this.setLocation(event, event.location, _current.waypoint);
+
         return;
       }
       var dt = new Date();
@@ -31171,6 +31219,40 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     setLocation: function setLocation(event, location, waypoint) {
       event.location = location;
       event.waypoint_link = waypoint;
+    },
+    getLunarState: function getLunarState() {
+      var odd = this.time.hour % 2 == 1;
+      var day = false;
+      var started = '';
+      var elapsed = '';
+
+      if (!odd && this.time.minute >= 30) {
+        day = true;
+        elapsed = this.time.minute - 30;
+        started = this.time.hour + ':30';
+      } else if (!odd && this.time.minute < 30) {
+        elapsed = this.time.minute + 15;
+        var hour = (this.time.hour + 23) % 24;
+        started = hour + ':45';
+      } else if (odd && this.time.minute < 45) {
+        day = true;
+        elapsed = 60 + this.time.minute - 30;
+        var _hour = (this.time.hour + 23) % 24;
+        started = _hour + ':30';
+      } else if (odd && this.time.minute >= 45) {
+        elapsed = this.time.minute - 45;
+        started = this.time.hour + ':45';
+      }
+
+      var duration = day ? 75 : 45;
+      this.lunar = {
+        day: day,
+        elapsed: elapsed,
+        left: duration - elapsed,
+        start: started,
+        duration: duration,
+        percentage: Math.round(elapsed / duration * 100)
+      };
     }
   }
 });
@@ -31231,7 +31313,64 @@ var render = function() {
               _vm._v(" "),
               _vm._m(2),
               _vm._v(" "),
-              _vm._m(3),
+              _c("div", { staticClass: "navbar-item is-hoverable" }, [
+                _c(
+                  "div",
+                  {
+                    staticClass: "field is-grouped",
+                    staticStyle: { margin: "0px" }
+                  },
+                  [
+                    _c("p", {
+                      staticClass: "control",
+                      domProps: {
+                        textContent: _vm._s(_vm.lunar.day ? "Day" : "Night")
+                      }
+                    }),
+                    _vm._v(" "),
+                    _c("p", { staticClass: "control" }, [
+                      _c(
+                        "progress",
+                        {
+                          staticClass: "progress is-small",
+                          staticStyle: {
+                            width: "100px",
+                            position: "relative",
+                            top: "50%",
+                            transform: "translateY(-50%)"
+                          },
+                          attrs: { max: "100" },
+                          domProps: { value: _vm.lunar.percentage }
+                        },
+                        [_vm._v(_vm._s(_vm.lunar.percentage) + "%")]
+                      )
+                    ]),
+                    _vm._v(" "),
+                    _c("p", {
+                      staticClass: "control",
+                      domProps: {
+                        textContent: _vm._s(_vm.lunar.day ? "Night" : "Day")
+                      }
+                    })
+                  ]
+                ),
+                _vm._v(" "),
+                _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
+                  _c("div", { staticClass: "navbar-item" }, [
+                    _c("div", [
+                      _c("small", [
+                        _vm._v(
+                          "\n                    " +
+                            _vm._s(_vm.lunar.day ? "Day" : "Night") +
+                            " ends in "
+                        ),
+                        _c("b", [_vm._v(_vm._s(_vm.lunar.left))]),
+                        _vm._v(" minutes\n                  ")
+                      ])
+                    ])
+                  ])
+                ])
+              ]),
               _vm._v(" "),
               _c("a", { staticClass: "navbar-item" }, [
                 _vm._v("\n            API\n          ")
@@ -31246,6 +31385,22 @@ var render = function() {
       _c("nav", { staticClass: "navbar has-shadow" }, [
         _c("div", { staticClass: "container" }, [
           _c("div", { staticClass: "navbar-tabs" }, [
+            _vm.favoriteCount > 0
+              ? _c(
+                  "a",
+                  {
+                    staticClass: "navbar-item is-tab",
+                    class: { "is-active": _vm.category == "favorites" },
+                    on: {
+                      click: function($event) {
+                        _vm.category = "favorites"
+                      }
+                    }
+                  },
+                  [_vm._v("\n          Favorites\n        ")]
+                )
+              : _vm._e(),
+            _vm._v(" "),
             _c(
               "a",
               {
@@ -31346,6 +31501,7 @@ var render = function() {
                 attrs: {
                   states: event.has_states,
                   tag: event.class,
+                  favorite: event.favorite,
                   name: event.name,
                   wiki: event.wiki_link,
                   waypoint: event.waypoint_link,
@@ -31354,8 +31510,9 @@ var render = function() {
                   next: event.next
                 },
                 on: {
-                  copied: function($event) {
-                    _vm.copyNotification()
+                  notification: _vm.notify,
+                  favorite: function($event) {
+                    _vm.toggleFavorite(event, $event)
                   }
                 }
               })
@@ -31387,6 +31544,7 @@ var render = function() {
                 attrs: {
                   states: event.has_states,
                   tag: event.class,
+                  favorite: event.favorite,
                   name: event.name,
                   wiki: event.wiki_link,
                   waypoint: event.waypoint_link,
@@ -31395,8 +31553,9 @@ var render = function() {
                   next: event.next
                 },
                 on: {
-                  copied: function($event) {
-                    _vm.copyNotification()
+                  notification: _vm.notify,
+                  favorite: function($event) {
+                    _vm.toggleFavorite(event, $event)
                   }
                 }
               })
@@ -31428,6 +31587,7 @@ var render = function() {
                 attrs: {
                   states: event.has_states,
                   tag: event.class,
+                  favorite: event.favorite,
                   name: event.name,
                   wiki: event.wiki_link,
                   waypoint: event.waypoint_link,
@@ -31436,8 +31596,9 @@ var render = function() {
                   next: event.next
                 },
                 on: {
-                  copied: function($event) {
-                    _vm.copyNotification()
+                  notification: _vm.notify,
+                  favorite: function($event) {
+                    _vm.toggleFavorite(event, $event)
                   }
                 }
               })
@@ -31446,10 +31607,10 @@ var render = function() {
         ])
       ]),
       _vm._v(" "),
-      _vm._m(4),
+      _vm._m(3),
       _vm._v(" "),
       _c("transition", { attrs: { name: "fade" } }, [
-        _vm.copied
+        _vm.notification.display
           ? _c(
               "div",
               { staticClass: "notification is-primary popup-notification" },
@@ -31499,55 +31660,6 @@ var staticRenderFns = [
       _c("a", { staticClass: "button is-link is-flex-touch" }, [
         _c("span", { staticClass: "icon is-small" }, [
           _c("i", { staticClass: "fa fa-bell" })
-        ])
-      ])
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "navbar-item is-hoverable" }, [
-      _c(
-        "div",
-        { staticClass: "field is-grouped", staticStyle: { margin: "0px" } },
-        [
-          _c("p", { staticClass: "control" }, [
-            _vm._v("\n                Day\n              ")
-          ]),
-          _vm._v(" "),
-          _c("p", { staticClass: "control" }, [
-            _c(
-              "progress",
-              {
-                staticClass: "progress is-small",
-                staticStyle: {
-                  width: "100px",
-                  position: "relative",
-                  top: "50%",
-                  transform: "translateY(-50%)"
-                },
-                attrs: { value: "15", max: "100" }
-              },
-              [_vm._v("15%")]
-            )
-          ]),
-          _vm._v(" "),
-          _c("p", { staticClass: "control" }, [
-            _vm._v("\n                Night\n              ")
-          ])
-        ]
-      ),
-      _vm._v(" "),
-      _c("div", { staticClass: "navbar-dropdown is-boxed" }, [
-        _c("div", { staticClass: "navbar-item" }, [
-          _c("div", [
-            _c("small", [
-              _vm._v(
-                "\n                    Day ends in 20 minutes\n                  "
-              )
-            ])
-          ])
         ])
       ])
     ])
@@ -31728,11 +31840,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     },
     states: {
       type: Boolean
+    },
+    favorite: {
+      type: Boolean,
+      default: false
     }
   },
   data: function data() {
     return {
-      favorite: false
+      fav: this.favorite
     };
   },
 
@@ -31753,9 +31869,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     }
   },
   methods: {
+    toggleFavorite: function toggleFavorite() {
+      this.fav = !this.fav;
+      this.$emit("favorite", this.fav);
+    },
     copyToClipboard: function copyToClipboard() {
       copy(this.waypoint);
-      this.$emit("copied");
+      this.$emit("notification", "Successfully copied waypoint to clipboard.");
     },
     formatNext: function formatNext(next) {
       if (next.hour > 0) return "in " + next.hour + " hour" + (next.hour == 1 ? "" : "s") + ", " + next.minute + " minute" + (next.minute == 1 ? "" : "s");
@@ -31824,51 +31944,68 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("span", { staticClass: "end" }, [
-          !_vm.states ? _c("span", [_vm._v(_vm._s(_vm.upcoming))]) : _vm._e(),
+          !_vm.states || !_vm.status.active
+            ? _c("span", [_vm._v(_vm._s(_vm.upcoming))])
+            : _vm._e(),
           _vm._v(" "),
-          _vm.states ? _c("span", [_vm._v("meta event")]) : _vm._e(),
+          _vm.states && _vm.status.active
+            ? _c("span", [_vm._v("meta event")])
+            : _vm._e(),
           _vm._v(" "),
           _c("ul", [
             _vm._m(0),
             _vm._v(" "),
-            _c("li", [
-              _c(
-                "a",
-                {
-                  on: {
-                    click: function($event) {
-                      _vm.copyToClipboard()
-                    }
+            _c(
+              "li",
+              {
+                directives: [
+                  {
+                    name: "show",
+                    rawName: "v-show",
+                    value: !(_vm.states == true && _vm.status.active == false),
+                    expression: "! (states == true && status.active == false)"
                   }
-                },
-                [
-                  _c("i", {
-                    staticClass: "fa fa-map-marker",
-                    attrs: { "aria-hidden": "true" }
-                  })
                 ]
-              )
-            ]),
+              },
+              [
+                _c(
+                  "a",
+                  {
+                    on: {
+                      click: function($event) {
+                        _vm.copyToClipboard()
+                      }
+                    }
+                  },
+                  [
+                    _c("i", {
+                      staticClass: "fa fa-map-marker",
+                      attrs: { "aria-hidden": "true" }
+                    })
+                  ]
+                )
+              ]
+            ),
             _vm._v(" "),
-            _c("li", { class: { favorite: _vm.favorite } }, [
+            _c("li", { class: { favorite: _vm.fav } }, [
               _c(
                 "a",
                 {
                   on: {
                     click: function($event) {
-                      _vm.favorite = !_vm.favorite
+                      _vm.toggleFavorite()
                     }
                   }
                 },
                 [
-                  _vm.favorite
+                  _vm.fav
                     ? _c("i", {
                         staticClass: "fa fa-star",
                         attrs: { "aria-hidden": "true" }
                       })
                     : _vm._e(),
                   _vm._v(" "),
-                  !_vm.favorite
+                  !_vm.fav
                     ? _c("i", {
                         staticClass: "fa fa-star-o",
                         attrs: { "aria-hidden": "true" }
