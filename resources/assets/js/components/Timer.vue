@@ -12,19 +12,19 @@
       </div>
       <div class="panel">
         <span class="start">
-          {{ states && next.at.state != status.name ? next.at.state : status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
+          {{ states && next.at.state != status.name ? next.at.state : status.active ? 'Next' : 'Starts' }} at {{ nextAt }}
         </span>
         <span class="end">
           <span v-if="!states || ! status.active">{{ upcoming }}</span>
           <span v-if="states && status.active">meta event</span>
           <ul>
-            <li>
+            <!--<li>
               <a>
                 <i class="fa fa-bell" aria-hidden="true"></i>
               </a>
-            </li>
+            </li>-->
             <li v-show="! (states == true && status.active == false)">
-              <a  @click="copyToClipboard()">
+              <a @click="copyToClipboard()">
                 <i class="fa fa-map-marker" aria-hidden="true"></i>
               </a>
             </li>
@@ -72,12 +72,15 @@ export default {
     favorite: {
       type: Boolean,
       default: false
+    },
+    format: {
+      type: String
     }
   },
   data() {
     return {
       fav: this.favorite
-    }
+    };
   },
   computed: {
     countdown() {
@@ -93,6 +96,23 @@ export default {
         return "currently in progress";
       }
       return this.formatNext(this.next);
+    },
+    nextAt() {
+      let t = this.next.at;
+      if (t == null) return "";
+      let form = new Date();
+      form.setUTCHours(t.hour);
+      form.setUTCMinutes(t.minute);
+      let hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
+      let minute =
+        form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
+      let d = new Date();
+      d.setHours(hour, minute);
+      let options = {
+        hour: "2-digit",
+        minute: "2-digit"
+      };
+      return d.toLocaleTimeString(this.format, options);
     }
   },
   methods: {
@@ -119,24 +139,5 @@ export default {
       return "in " + next.minute + " minute" + (next.minute == 1 ? "" : "s");
     }
   },
-  filters: {
-    time: function(t) {
-      if (t == null) return "";
-      let form = new Date();
-      form.setUTCHours(t.hour);
-      form.setUTCMinutes(t.minute);
-      let hour = form.getHours() < 10 ? "0" + form.getHours() : form.getHours();
-      let minute =
-        form.getMinutes() < 10 ? "0" + form.getMinutes() : form.getMinutes();
-      let d = new Date();
-      d.setHours(hour, minute);
-      let options = {
-        hour: "2-digit",
-        minute: "2-digit"
-      };
-      return d.toLocaleTimeString([], options);
-      return hour + ":" + minute;
-    }
-  }
 };
 </script>
