@@ -21,20 +21,13 @@
                 </span>
               </a>
             </div>
-            <div class="navbar-item">
-              <a class="button is-link is-flex-touch">
-                <span class="icon is-small">
-                  <i class="fa fa-cog"></i>
-                </span>
-              </a>
-            </div>
-            <div class="navbar-item">
-              <a class="button is-link is-flex-touch">
+            <!--<div class="navbar-item">
+              <a @click="popups.settings = true" class="button is-link is-flex-touch">
                 <span class="icon is-small">
                   <i class="fa fa-bell"></i>
                 </span>
               </a>
-            </div>
+            </div>-->
             <div class="navbar-item is-hoverable">
               <div class="field is-grouped" style="margin:0px;">
                 <p class="control" v-text="lunar.day ? 'Day' : 'Night'"></p>
@@ -47,15 +40,19 @@
                 <div class="navbar-item">
                   <div>
                     <small>
-                      {{ lunar.day ? 'Day' : 'Night' }} ends in <b>{{ lunar.left }}</b> minutes
+                      {{ lunar.day ? 'Day' : 'Night' }} ends in
+                      <b>{{ lunar.left }}</b> minutes
                     </small>
                   </div>
                 </div>
               </div>
             </div>
-            <a class="navbar-item">
-              API
+            <a @click="changeFormat" class="navbar-item">
+              {{ hourFormat == 'en-US' ? '12H' :  '24H' }}
             </a>
+            <!--<a class="navbar-item">
+              API
+            </a>-->
           </div>
         </div>
       </div>
@@ -90,15 +87,15 @@
       <div class="container">
         <h1 v-show="now.length > 0" class="title">Happening now...</h1>
         <div class="columns is-multiline">
-          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in now" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in now" :key="event.id" :format="hourFormat" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 v-show="soon.length > 0" class="title">Soon...</h1>
         <div class="columns is-multiline">
-          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in soon" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in soon" :key="event.id" :format="hourFormat" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
         <h1 v-show="later.length > 0" class="title">Later...</h1>
         <div class="columns is-multiline">
-          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in later" :key="event.id" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
+          <timer @notification="notify" @favorite="toggleFavorite(event, $event)" v-for="event in later" :key="event.id" :format="hourFormat" :states="event.has_states" :tag="event.class" :favorite="event.favorite" :name="event.name" :wiki="event.wiki_link" :waypoint="event.waypoint_link" :location="event.location" :status="event.status" :next="event.next" />
         </div>
       </div>
     </section>
@@ -144,9 +141,13 @@ export default {
         percentage: 0,
         left: 0
       },
+      popups: {
+        settings: false
+      },
       sorting: "fa-sort-numeric-asc",
       category: "all",
-      favoriteCount: 0
+      favoriteCount: 0,
+      hourFormat: "en-US"
     };
   },
   computed: {
@@ -286,7 +287,8 @@ export default {
       }.bind(this),
       1000
     );
-    this.getLunarState()
+    this.getLunarState();
+    this.hourFormat = this.getTimeFormat();
   },
   methods: {
     toggleFavorite(event, favored) {
@@ -501,28 +503,28 @@ export default {
     getLunarState() {
       let odd = this.time.hour % 2 == 1;
       let day = false;
-      let started = '';
-      let elapsed = '';
+      let started = "";
+      let elapsed = "";
 
-      if ( ! odd && this.time.minute >= 30) {
+      if (!odd && this.time.minute >= 30) {
         day = true;
         elapsed = this.time.minute - 30;
-        started = this.time.hour + ':30';
-      } else if ( ! odd && this.time.minute < 30) {
+        started = this.time.hour + ":30";
+      } else if (!odd && this.time.minute < 30) {
         elapsed = this.time.minute + 15;
         let hour = (this.time.hour + 23) % 24;
-        started = hour + ':45';
+        started = hour + ":45";
       } else if (odd && this.time.minute < 45) {
         day = true;
         elapsed = 60 + this.time.minute - 30;
         let hour = (this.time.hour + 23) % 24;
-        started = hour + ':30';
+        started = hour + ":30";
       } else if (odd && this.time.minute >= 45) {
         elapsed = this.time.minute - 45;
-        started = this.time.hour + ':45';
+        started = this.time.hour + ":45";
       }
-      
-      let duration = (day ? 75 : 45);
+
+      let duration = day ? 75 : 45;
       this.lunar = {
         day: day,
         elapsed: elapsed,
@@ -531,6 +533,24 @@ export default {
         duration: duration,
         percentage: Math.round(elapsed / duration * 100)
       };
+    },
+    getTimeFormat() {
+      let format = localStorage.getItem("format");
+      if (format === null) {
+        let time = new Date();
+        if (time.toLocaleTimeString().endsWith("M")) {
+          localStorage.setItem("format", "en-US");
+          return "en-US";
+        } else {
+          localStorage.setItem("format", "en-GB");
+          return "en-GB";
+        }
+      }
+      return format;
+    },
+    changeFormat() {
+      this.hourFormat = this.hourFormat == "en-US" ? "en-GB" : "en-US";
+      localStorage.setItem("format", this.hourFormat);
     }
   }
 };
