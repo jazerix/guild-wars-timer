@@ -15,23 +15,23 @@
           {{ states && next.at.state != status.name ? next.at.state : status.active ? 'Next' : 'Starts' }} at {{ next.at | time }}
         </span>
         <span class="end">
-          <span v-if="!states">{{ upcoming }}</span>
-          <span v-if="states">meta event</span>
+          <span v-if="!states || ! status.active">{{ upcoming }}</span>
+          <span v-if="states && status.active">meta event</span>
           <ul>
             <li>
               <a>
                 <i class="fa fa-bell" aria-hidden="true"></i>
               </a>
             </li>
-            <li>
-              <a @click="copyToClipboard()">
+            <li v-show="! (states == true && status.active == false)">
+              <a  @click="copyToClipboard()">
                 <i class="fa fa-map-marker" aria-hidden="true"></i>
               </a>
             </li>
-            <li :class="{ 'favorite': favorite }">
+            <li :class="{ 'favorite': fav }">
               <a @click="toggleFavorite()">
-                <i v-if="favorite" class="fa fa-star" aria-hidden="true"></i>
-                <i v-if="!favorite" class="fa fa-star-o" aria-hidden="true"></i>
+                <i v-if="fav" class="fa fa-star" aria-hidden="true"></i>
+                <i v-if="!fav" class="fa fa-star-o" aria-hidden="true"></i>
               </a>
             </li>
           </ul>
@@ -68,12 +68,16 @@ export default {
     },
     states: {
       type: Boolean
+    },
+    favorite: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
     return {
-      favorite: false
-    };
+      fav: this.favorite
+    }
   },
   computed: {
     countdown() {
@@ -93,12 +97,12 @@ export default {
   },
   methods: {
     toggleFavorite() {
-      this.favorite = !this.favorite;
-      this.$emit("favorite");
+      this.fav = !this.fav;
+      this.$emit("favorite", this.fav);
     },
     copyToClipboard() {
       copy(this.waypoint);
-      this.$emit("copied");
+      this.$emit("notification", "Successfully copied waypoint to clipboard.");
     },
     formatNext(next) {
       if (next.hour > 0)

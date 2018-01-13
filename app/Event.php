@@ -34,21 +34,25 @@ class Event extends Model
             $event = $this->currentState((int)date('H'), (int)date('i'));
             
             $current = new \DateTime();
-            
-
             $endTime = new \DateTime("{$event->time_at}");
             $endTime->add(new \DateInterval("PT{$event->duration}M"));
 
             if ($current->format('d') != $endTime->format('d'))
                 $current->add(new \DateInterval("PT24H"));
-
+            
+            if ($endTime->getTimeStamp() <= time())
+                return [
+                    'active' => false,
+                    'cooldown' => null,
+                    'name' => 'Inactive'
+                ];
             return [
-                'active' => true,
-                'cooldown' => $endTime->getTimeStamp() - $current->getTimeStamp(),
-                'name' => $event->state
-            ];
-        }
+                    'active' => true,
+                    'cooldown' => $endTime->getTimeStamp() - $current->getTimeStamp(),
+                    'name' => $event->state
+                ];
 
+        }
         $active = false;
         $priorToDuration = time() - $this->duration * 60;
         $current = $this->findEvent((int)date('H', $priorToDuration), (int)date('i', $priorToDuration));
